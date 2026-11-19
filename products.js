@@ -59,7 +59,8 @@ window.PRODUCTS = [
     "id": "PROD-009",
     "name": "Papaya",
     "category": "Frutas",
-    "unit": "kg",
+    "unit": "pieza",
+    "saleType": "Pieza por kg",
     "image": "assets/images/PRODUCTOS_Images/PROD-010.Imagen.203157.jpg"
   },
   {
@@ -482,5 +483,25 @@ window.PRODUCTS = [
     "minimum": 5,
     "increment": 1,
     "image": "assets/images/CATEGORIAS_Images/CAT-006.Imagen_categoria.050551.jpg"
+  },
+  {
+    "id": "PROD-070",
+    "name": "Piloncillo Blanco",
+    "category": "Semillas y abarrotes",
+    "unit": "pieza",
+    "saleType": "Pieza por kg",
+    "minimum": 1,
+    "increment": 1,
+    "image": "assets/images/logo-mascota.jpeg"
+  },
+  {
+    "id": "PROD-071",
+    "name": "Piloncillo Moreno",
+    "category": "Semillas y abarrotes",
+    "unit": "pieza",
+    "saleType": "Pieza por kg",
+    "minimum": 1,
+    "increment": 1,
+    "image": "assets/images/logo-mascota.jpeg"
   }
 ];

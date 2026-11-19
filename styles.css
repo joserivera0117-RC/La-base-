@@ -215,14 +215,23 @@ body::after{content:"";position:fixed;z-index:80;inset:0;pointer-events:none;opa
 .drawer-item-card:hover{transform:translateY(-1px)}
 .drawer-item-img{width:46px;height:46px;border-radius:12px;overflow:hidden;flex:0 0 46px;background:#ebeade}
 .drawer-item-img img{width:100%;height:100%;object-fit:cover}
-.drawer-item-details{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
-.drawer-item-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
-.drawer-item-top strong{font:700 13.5px var(--sans);color:var(--green);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.drawer-item-details{flex:1;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(88px,auto);align-items:start;gap:12px}
+.drawer-item-main{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+.drawer-item-main>strong{font:700 13.5px var(--sans);color:var(--green);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .drawer-item-portion{display:inline-block;font-size:11px;color:#5a6854;font-weight:600}
-.drawer-item-price-row{display:flex;align-items:center;justify-content:space-between;margin-top:2px}
+.drawer-item-actions{display:flex;align-items:center;gap:8px}
 .drawer-item-price{font:800 13.5px var(--sans);color:var(--green)}
+.drawer-item-summary{min-width:0;display:flex;flex-direction:column;align-items:flex-end;gap:3px;padding-top:1px;text-align:right}
+.drawer-item-weight-estimate,.drawer-item-unit-price{color:#71806a;font-size:10px;line-height:1.35}
 .drawer-item-remove{border:0;background:none;color:#ad4d36;font:700 11px var(--sans);cursor:pointer;padding:2px 6px;border-radius:6px;transition:background .2s}
 .drawer-item-remove:hover{background:#fae9d9}
+.drawer-item-edit{border:0;background:none;color:var(--green-2);font:700 11px var(--sans);cursor:pointer;padding:2px 6px;border-radius:6px;transition:background .2s}
+.drawer-item-edit:hover{background:#e8eedf}
+@media(max-width:390px){
+  .drawer-item-details{grid-template-columns:minmax(0,1fr) minmax(78px,auto);gap:8px}
+  .drawer-item-actions{gap:4px}
+  .drawer-item-edit,.drawer-item-remove{padding:2px 4px;font-size:10px}
+}
 
 .delivery-picker{background:#f3f5eb;border-radius:16px;padding:12px 14px;margin-bottom:12px;border:1px solid #d2d8c7}
 .delivery-picker-title{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--green);margin-bottom:8px}
