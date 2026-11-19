@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f5ec">
+  <meta name="description" content="Frutas, verduras, chiles, semillas y productos para tu cocina en Recaudería La Base, Naucalpan. Consulta el surtido y prepara tu pedido por WhatsApp.">
+  <title>Recaudería La Base | Fresco para tu mesa</title>
+  <link rel="icon" href="assets/images/CATEGORIAS_Images/CAT-001.Imagen_categoria.050508.jpg" type="image/jpeg">
+  <link rel="stylesheet" href="styles.css">
+  <script src="products.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+  <div class="announcement"><span class="announcement-dot"></span> Surtido fresco diario <span class="announcement-divider">✳</span> Pedidos para recoger y envíos a domicilio (consulta zona) <span class="announcement-divider">✳</span> Naucalpan, Estado de México</div>
+
+  <header class="site-header" id="inicio">
+    <div class="header-inner wrap">
+      <a class="brand" href="#inicio" aria-label="Recaudería La Base, inicio">
+        <span class="brand-mark"><img src="assets/images/logo-mascota.jpeg" alt="Logo de Recaudería La Base"></span>
+        <span class="brand-copy"><strong>Recaudería <em>La Base</em></strong><small>Broncas y compañía</small></span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="Abrir menú"><span></span><span></span></button>
+      <nav class="main-nav" id="main-nav" aria-label="Navegación principal">
+        <a href="#productos">Productos</a><a href="#encargos">Encargos</a><a href="#nosotros">Nosotros</a><a href="#contacto">Contacto</a>
+        <a class="button button-small button-dark nav-cta" data-wa href="#pedidos">Pedir por WhatsApp <span aria-hidden="true">↗</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="contenido">
+    <section class="hero wrap">
+      <div class="hero-copy reveal">
+        <p class="eyebrow"><span class="eyebrow-line"></span> El mercado de todos los días</p>
+        <h1>Lo fresco<br>para tu mesa,<br><span>todos los días.</span></h1>
+        <p class="hero-description">Frutas, verduras, chiles, semillas y mucho más para darle sabor a tu cocina. Ven a conocernos o mándanos tu lista.</p>
+        <div class="hero-actions"><a class="button button-dark" href="#productos">Explorar productos <span aria-hidden="true">↓</span></a><a class="text-link" data-wa href="#pedidos">Pedir por WhatsApp <span aria-hidden="true">↗</span></a></div>
+        <div class="hero-proof"><div class="proof-avatars" aria-hidden="true"><span>🍋</span><span>🌶️</span><span>🥑</span></div><p><strong>Variedad para tu cocina</strong><br><span>Pregunta por el surtido de hoy</span></p></div>
+      </div>
+      <div class="hero-art reveal" aria-label="Productos de Recaudería La Base">
+        <div class="swap-orbit" aria-hidden="true"></div><div class="swap-orbit swap-orbit-two" aria-hidden="true"></div>
+        <div class="swap-stage" id="hero-swap" aria-live="polite">
+          <article class="swap-card"><img src="assets/images/PRODUCTOS_Images/PROD-001.Imagen.200648.jpg" alt="Aguacate fresco" fetchpriority="high"><div class="swap-caption"><span>01 / Frutas</span><strong>Aguacate</strong></div></article>
+          <article class="swap-card"><img src="assets/images/PRODUCTOS_Images/PROD-016.Imagen.211552.jpg" alt="Chile de árbol" loading="lazy"><div class="swap-caption"><span>02 / Chiles secos</span><strong>Toronjas deliciosas</strong></div></article>
+          <article class="swap-card"><img src="assets/images/PRODUCTOS_Images/PROD-033.Imagen.214223.jpg"  alt="Frijol negro" loading="lazy"><div class="swap-caption"><span>03 / Semillas y abarrotes</span><strong>Frijol negro</strong></div></article>
+        </div>
+        <div class="swap-label"><span>✳</span> El mercado de todos los días</div>
+      </div>
+      <a class="scroll-cue" href="#categorias"><span></span> Baja y descubre</a>
+    </section>
+
+    <section class="category-section section-pad" id="categorias">
+      <div class="wrap">
+        <div class="section-heading reveal"><div><p class="eyebrow"><span class="eyebrow-line"></span> Lo que se antoja</p><h2>Un mercado de<br><em>muchos sabores.</em></h2></div><p class="section-intro">Para la comida de hoy, el antojo de la tarde o esa receta que ya tienes en mente.</p></div>
+        <div class="category-grid" id="category-grid" aria-label="Categorías de productos"></div>
+        <p class="availability-note"><span aria-hidden="true">✳</span> El surtido y los precios pueden variar. Escríbenos para confirmar disponibilidad.</p>
+      </div>
+    </section>
+
+    <section class="products-section section-pad" id="productos">
+      <div class="wrap">
+        <div class="section-heading reveal"><div><p class="eyebrow"><span class="eyebrow-line"></span> Encuentra lo tuyo</p><h2>¿Qué ponemos<br><em>en tu canasta?</em></h2></div><p class="section-intro">Explora algunos de los productos de la casa. La existencia cambia con el surtido: consulta antes de venir.</p></div>
+
+        <!-- Tira destacada de Especiales de hoy / Pocas piezas -->
+        <div class="specials-container reveal" id="specials-container" hidden>
+          <div class="specials-header">
+            <div class="specials-title"><span class="badge-dot"></span> <strong>Llegó hoy · Pocas piezas</strong></div>
+            <span class="specials-hint">Surtido especial disponible hoy</span>
+          </div>
+          <div class="specials-row" id="specials-row"></div>
+        </div>
+
+        <div class="product-tools reveal"><div class="filter-list" id="filter-list" role="group" aria-label="Filtrar productos"></div><label class="search-box"><span aria-hidden="true">⌕</span><span class="sr-only">Buscar productos</span><input id="product-search" type="search" placeholder="Busca un producto" autocomplete="off"></label></div>
+        <div class="product-grid" id="product-grid" aria-live="polite"></div>
+        <div class="catalog-footer"><p id="catalog-count"></p><button class="button button-outline" id="show-more" type="button">Ver más productos <span aria-hidden="true">↓</span></button></div>
+      </div>
+    </section>
+
+    <!-- Sección de Encargos y Pedidos Especiales -->
+    <section class="special-orders-section section-pad" id="encargos">
+      <div class="wrap">
+        <div class="special-orders-panel reveal">
+          <div class="special-orders-content">
+            <p class="eyebrow eyebrow-light"><span class="eyebrow-line"></span> Servicio sobre pedido</p>
+            <h2>¿Buscas una fruta o verdura<br><em>que casi no encuentras?</em></h2>
+            <p>Hay frutas y verduras que no siempre se exhiben en el día a día (fresas selectas, higos, mamey maduro, zapote, hierbas finas o cajas completas para tus eventos familiares). <strong>¡Nosotros te las conseguimos en nuestro próximo viaje de surtido!</strong></p>
+            <div class="special-orders-actions">
+              <a class="button button-light" href="https://wa.me/525543628190?text=Hola,%20Recauder%C3%ADa%20La%20Base.%20Me%20gustar%C3%ADa%20hacer%20un%20encargo%20especial%20de%20un%20producto%20para%20un%20d%C3%ADa%20espec%C3%ADfico:" target="_blank" rel="noopener">Pedir por encargo en WhatsApp <span aria-hidden="true">↗</span></a>
+              <span class="special-delivery-badge">🛵 Servicio a domicilio disponible (consulta distancia)</span>
+            </div>
+          </div>
+          <div class="special-orders-art" aria-hidden="true">
+            <div class="art-stamp"><span>ENCARGO</span><b>★</b><span>ESPECIAL</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="story-section section-pad" id="nosotros">
+      <div class="wrap story-layout">
+        <div class="story-image reveal"><div class="story-image-frame"><img src="assets/images/logo-mascota.jpeg" alt="Ilustración de la pandilla de Recaudería La Base entre frutas y verduras" loading="lazy"></div><div class="story-stamp"><span>Fresco</span><b>✳</b><span>y con cariño</span></div></div>
+        <div class="story-copy reveal"><p class="eyebrow"><span class="eyebrow-line"></span> Hola, somos La Base</p><h2>El sabor del<br><em>buen mercado.</em></h2><p>Somos una recaudería local con frutas, verduras, leguminosas, chiles frescos y secos, semillas y productos de abarrotes para la cocina de todos los días.</p><p>Recibimos surtido varias veces por semana, así que siempre hay algo nuevo que llevar a casa. Escríbenos para saber qué llegó y qué se te antoja.</p><a class="text-link text-link-green" href="#contacto">Ven a visitarnos <span aria-hidden="true">↗</span></a></div>
+      </div>
+    </section>
+
+    <section class="reasons-section section-pad">
+      <div class="wrap"><div class="reasons-heading reveal"><p class="eyebrow"><span class="eyebrow-line"></span> Cerca de ti, cerca de tu cocina</p><h2>Lo bueno empieza<br><em>por elegir fresco.</em></h2></div>
+        <div class="reason-grid">
+          <article class="reason-card reveal"><span class="reason-number">01</span><span class="reason-icon">✿</span><h3>Variedad para el diario</h3><p>Frutas, verduras y básicos para resolver desde el desayuno hasta la comida.</p></article>
+          <article class="reason-card reveal"><span class="reason-number">02</span><span class="reason-icon">↻</span><h3>Surtido que se mueve</h3><p>Recibimos mercancía varias veces por semana. Pregunta qué acaba de llegar.</p></article>
+          <article class="reason-card reveal"><span class="reason-number">03</span><span class="reason-icon">♡</span><h3>Trato directo</h3><p>Cuéntanos qué necesitas y te confirmamos disponibilidad y precio por WhatsApp.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="order-section section-pad" id="pedidos">
+      <div class="wrap order-panel reveal"><div class="order-decoration" aria-hidden="true">✳</div><div class="order-copy"><p class="eyebrow eyebrow-light"><span class="eyebrow-line"></span> Fácil y directo</p><h2>Tu lista, nuestro<br><em>próximo pedido.</em></h2><p>Mándanos lo que buscas. Te confirmamos el surtido y el precio, y coordinamos para que pases a recogerlo.</p><a class="button button-light" data-wa href="#contacto">Escribir por WhatsApp <span aria-hidden="true">↗</span></a><small>Pedidos para recoger en el local · Consulta disponibilidad antes de confirmar.</small></div><div class="order-steps"><div class="order-step"><span>1</span><p><strong>Escríbenos</strong><small>Abre WhatsApp y salúdanos.</small></p></div><div class="step-line"></div><div class="order-step"><span>2</span><p><strong>Envíanos tu lista</strong><small>Dinos qué productos buscas.</small></p></div><div class="step-line"></div><div class="order-step"><span>3</span><p><strong>Confirmamos contigo</strong><small>Revisamos surtido y precio para recoger.</small></p></div></div></div>
+    </section>
+
+    <section class="contact-section section-pad" id="contacto">
+      <div class="wrap"><div class="section-heading reveal"><div><p class="eyebrow"><span class="eyebrow-line"></span> Aquí estamos</p><h2>Nos vemos<br><em>en La Base.</em></h2></div><p class="section-intro">Pasa por el local o escríbenos antes para confirmar lo que buscas. ¡Te esperamos!</p></div>
+        <div class="contact-layout reveal"><div class="contact-card"><div class="contact-detail"><span class="contact-icon">⌖</span><div><small>Encuéntranos</small><p>Cerca de Base Poza-Honda, Ruta 58<br>Río Totolinga 1, Minas el Tecolote<br>53697 Naucalpan de Juárez, Méx.</p><a class="text-link text-link-green" href="https://maps.google.com/?q=Base+Poza-Honda+Ruta+58,+R%C3%ADo+Totolinga+1,+Minas+el+Tecolote,+53697+Naucalpan+de+Ju%C3%A1rez,+M%C3%A9xico" target="_blank" rel="noopener">Cómo llegar <span aria-hidden="true">↗</span></a></div></div><div class="contact-divider"></div><div class="contact-detail"><span class="contact-icon">◷</span><div><small>Horario</small><p>Lunes a domingo<br><strong>7:00 a. m. – 9:00 p. m.</strong></p></div></div><div class="contact-divider"></div><div class="contact-detail"><span class="contact-icon">☏</span><div><small>WhatsApp y teléfono</small><p><a href="tel:+525543628190">+52 55 4362 8190</a></p><a class="text-link text-link-green" data-wa href="#pedidos">Mándanos un mensaje <span aria-hidden="true">↗</span></a></div></div></div>
+          <div class="map-card"><iframe title="Mapa de la zona de Recaudería La Base en Naucalpan" src="https://maps.google.com/maps?q=Base+Poza-Honda+Ruta+58,+R%C3%ADo+Totolinga+1,+Minas+el+Tecolote,+53697+Naucalpan+de+Ju%C3%A1rez,+M%C3%A9xico&amp;output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe><a href="https://maps.google.com/?q=Base+Poza-Honda+Ruta+58,+R%C3%ADo+Totolinga+1,+Minas+el+Tecolote,+53697+Naucalpan+de+Ju%C3%A1rez,+M%C3%A9xico" target="_blank" rel="noopener" class="map-link">Abrir ubicación en Google Maps <span aria-hidden="true">↗</span></a></div></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer"><div class="wrap footer-main"><a class="brand brand-footer" href="#inicio"><span class="brand-mark"><img src="assets/images/logo-mascota.jpeg" alt="Logo de Recaudería La Base"></span><span class="brand-copy"><strong>Recaudería <em>La Base</em></strong><small>Broncas y compañía</small></span></a><p>Fruta, verdura y todo lo rico<br>para tu cocina.</p><nav aria-label="Enlaces de pie de página"><a href="#productos">Productos</a><a href="#nosotros">Nosotros</a><a href="#contacto">Contacto</a><a data-wa href="#pedidos">WhatsApp ↗</a></nav></div><div class="wrap footer-bottom"><span>© <span id="current-year"></span> Recaudería La Base</span><span>Hecho con cariño y sazón <b>✳</b></span></div></footer>
+
+  <button class="list-fab" id="list-open" type="button" hidden aria-haspopup="dialog"><span class="basket-icon">＋</span><span>Mi lista</span><b id="list-count">0</b></button>
+  <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+  <aside class="list-drawer" id="list-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" aria-hidden="true">
+    <div class="drawer-head">
+      <div>
+        <p class="eyebrow"><span class="eyebrow-line"></span> Para tu visita</p>
+        <h2 id="drawer-title">Tu lista</h2>
+      </div>
+      <button id="drawer-close" class="drawer-close" type="button" aria-label="Cerrar lista">×</button>
+    </div>
+    <p class="drawer-hint">Agrega lo que te gustaría llevar. Te confirmamos existencia y precio por WhatsApp.</p>
+    
+    <div class="drawer-body">
+      <ul class="drawer-items" id="drawer-items"></ul>
+      <p class="drawer-empty" id="drawer-empty">Todavía no agregas productos.<br>Explora el catálogo y arma tu lista fresca.</p>
+    </div>
+
+    <div class="drawer-footer-summary" id="drawer-summary">
+      <div class="delivery-picker">
+        <span class="delivery-picker-title">¿Cómo prefieres recibirlo?</span>
+        <div class="delivery-chip-group" role="radiogroup" aria-label="Modalidad de entrega">
+          <button type="button" class="delivery-chip is-selected" data-mode="recoger" aria-pressed="true">🏪 Recoger en local</button>
+          <button type="button" class="delivery-chip" data-mode="domicilio" aria-pressed="false">🛵 A domicilio</button>
+        </div>
+        <p class="delivery-hint-text" id="delivery-hint-text" hidden>🛵 Envío a domicilio sujeto a cobertura y distancia desde la recaudería en Naucalpan. Confirmamos costo por WhatsApp.</p>
+      </div>
+
+      <div class="drawer-total-row">
+        <span>Total estimado:</span>
+        <strong id="drawer-total-amount">$0.00</strong>
+      </div>
+      <p class="drawer-disclaimer">
+        ✳ <strong>Aviso:</strong> Los precios y la disponibilidad pueden variar según el pesaje exacto y la temporada del día. Te confirmaremos el total definitivo por WhatsApp antes de preparar tu pedido.
+      </p>
+      <a class="button button-dark drawer-send" id="send-list" data-wa href="#pedidos">Enviar lista por WhatsApp <span aria-hidden="true">↗</span></a>
+    </div>
+  </aside>
+
+  <!-- Modal de Porción / Cantidad Adaptable ("Arma tu pedido") -->
+  <div class="modal-backdrop" id="portion-modal-backdrop" hidden></div>
+  <div class="portion-modal-wrapper" id="portion-modal-wrapper" hidden>
+    <div class="portion-modal-card" id="portion-modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-product-title">
+      <div class="portion-modal-head">
+        <span class="portion-eyebrow">— ARMA TU PEDIDO</span>
+        <button type="button" class="portion-modal-close" id="portion-modal-close" aria-label="Cerrar">×</button>
+      </div>
+
+      <div class="portion-modal-titles">
+        <h3 id="modal-product-title">Producto</h3>
+        <p id="modal-product-subtitle">Precio · sujeto a disponibilidad</p>
+      </div>
+
+      <!-- Segmented Tab Toggle (Solo visible en productos por peso kg/gramos) -->
+      <div class="portion-tab-toggle" id="portion-tab-toggle" hidden>
+        <button type="button" class="portion-tab-btn is-active" data-tab="peso">Por peso</button>
+        <button type="button" class="portion-tab-btn" data-tab="monto">Por monto ($)</button>
+      </div>
+
+      <!-- Contenedor dinámico según unidad (peso, hierbas o piezas/manojos) -->
+      <div class="portion-modal-body" id="modal-dynamic-body"></div>
+
+      <!-- Fila de importe estimado en el modal -->
+      <div class="portion-calc-row" id="portion-calc-row">
+        <span id="portion-calc-label">Importe estimado:</span>
+        <strong id="portion-calc-value">$0.00 MXN</strong>
+      </div>
+      <p class="portion-weight-estimate" id="portion-weight-estimate" hidden></p>
+
+      <!-- Acciones de abajo -->
+      <div class="portion-modal-actions">
+        <button type="button" class="modal-btn-cancel" id="portion-cancel-btn">CANCELAR</button>
+        <button type="button" class="button button-dark modal-btn-confirm" id="portion-confirm-btn">
+          <span>AGREGAR A MI LISTA</span> <span aria-hidden="true">↗</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <a class="whatsapp-float" data-wa href="#pedidos" aria-label="Escríbenos por WhatsApp"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3.5A12.3 12.3 0 0 0 5.4 22.1L4 28l6.1-1.6A12.4 12.4 0 1 0 16 3.5Zm0 22.5c-1.9 0-3.7-.5-5.3-1.5l-.4-.2-3.6.9 1-3.5-.3-.4A10.1 10.1 0 1 1 16 26Zm5.5-7.6c-.3-.2-1.8-.9-2.1-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1-.3-.2-1.3-.5-2.5-1.6-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6c.2-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.2-.7-1.7-1-2.3-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4s-1.1 1.1-1.1 2.6 1.1 3 1.2 3.2c.2.2 2.2 3.3 5.3 4.6.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2.1-1.4.3-.7.3-1.3.2-1.4-.1-.1-.3-.2-.6-.4Z"/></svg></a>
+</body>
+</html>
