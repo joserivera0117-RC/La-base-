@@ -558,7 +558,11 @@
   }
 
   function formatMoney(value) {
-    return Number(value).toLocaleString('es-MX', { minimumFractionDigits: Number.isInteger(Number(value)) ? 0 : 2, maximumFractionDigits: 2 });
+    return Math.round(Number(value)).toLocaleString('es-MX', { maximumFractionDigits: 0 });
+  }
+
+  function formatQuantity(value) {
+    return Number(value).toLocaleString('es-MX', { maximumFractionDigits: 2 });
   }
 
   function getMinimumAmount(product) {
@@ -616,8 +620,8 @@
 
   function formatGrams(grams) {
     return grams >= 1000
-      ? `${formatMoney(grams / 1000)} kg`
-      : `${formatMoney(grams)} g`;
+      ? `${formatQuantity(grams / 1000)} kg`
+      : `${formatQuantity(grams)} g`;
   }
 
   function renderWeightFields() {
@@ -672,7 +676,7 @@
     const valueLabel = body.querySelector('#portion-money-value');
     const applyValue = (value) => {
       const numeric = parseDecimal(value);
-      portionValue = Math.max(minimum, numeric);
+      portionValue = Math.max(minimum, Math.round(numeric));
       input.value = String(portionValue);
       valueLabel.textContent = `$${formatMoney(portionValue)}`;
       updatePortionSummary();
@@ -760,10 +764,10 @@
 
     const pricePerUnit = parseDecimal(activePortionProduct.price);
     let estimated = 0;
-    if (portionMode === 'peso') estimated = pricePerUnit * (portionValue / 1000);
-    if (portionMode === 'monto') estimated = portionValue;
+    if (portionMode === 'peso') estimated = Math.round(pricePerUnit * (portionValue / 1000));
+    if (portionMode === 'monto') estimated = Math.round(portionValue);
     if (portionMode === 'unidad') {
-      estimated = activePortionProduct.saleType === 'pieza-peso' ? 0 : pricePerUnit * portionValue;
+      estimated = activePortionProduct.saleType === 'pieza-peso' ? 0 : Math.round(pricePerUnit * portionValue);
     }
 
     const weightEstimate = portionMode === 'monto' && activePortionProduct.saleType === 'peso'
@@ -871,13 +875,13 @@
     chosen.forEach((p) => {
       const entry = selected.get(p.id);
       const num = entry ? parseDecimal(entry.estimated) : parseDecimal(p.price);
-      if (num > 0) { estimatedTotal += num; itemsWithPrice++; }
+      if (num > 0) { estimatedTotal += Math.round(num); itemsWithPrice++; }
     });
 
     if (drawerTotalAmount) {
       if (estimatedTotal > 0) {
         const hasUnpriced = itemsWithPrice < chosen.length;
-        drawerTotalAmount.textContent = `$${estimatedTotal.toFixed(2)}${hasUnpriced ? '*' : ''}`;
+        drawerTotalAmount.textContent = `$${formatMoney(estimatedTotal)}${hasUnpriced ? '*' : ''}`;
         drawerTotalAmount.title = hasUnpriced ? 'Cálculo parcial basado en productos con precio publicado' : 'Total estimado';
       } else {
         drawerTotalAmount.textContent = 'Por confirmar';
@@ -919,7 +923,7 @@
 
     if (estimatedTotal > 0) {
       lines.push('');
-      lines.push(`*Total estimado${itemsWithPrice < chosen.length ? ' parcial' : ''}:* $${estimatedTotal.toFixed(2)} MXN`);
+      lines.push(`*Total estimado${itemsWithPrice < chosen.length ? ' parcial' : ''}:* $${formatMoney(estimatedTotal)} MXN`);
     }
 
     lines.push('\n¿Me confirman disponibilidad y total, por favor?');

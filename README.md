@@ -54,6 +54,8 @@ Usa estos encabezados (el orden de la plantilla es el recomendado):
 
 El respaldo local incluye 69 productos: los 67 registros originales más Piloncillo Blanco y Piloncillo Moreno. Papaya y ambos piloncillos usan `Pieza por kg`; se solicitan piezas enteras y el importe se confirma después de pesarlas. El sitio consulta Google Sheets en línea; editar este CSV no cambia la hoja publicada, por lo que también hay que actualizar allí `Unidad`, `Tipo Venta`, `Precio`, `Cantidad Minima` e `Incremento` de cada producto.
 
+Los precios de `Precio` se leen como pesos reales, sin multiplicarlos por 100 ni modificarlos en la hoja. Los importes calculados se redondean por producto al peso más cercano (50 centavos suben al siguiente peso) y el total de la lista suma esos importes redondeados. Las cantidades de gramos conservan su precisión.
+
 Revisa los precios y datos de `productos_la_base_actualizado.csv` antes de importarlo. No reemplaces tu hoja existente con esta plantilla si eso borraría precios u otros datos.
 Usa `productos_la_base_actualizado.csv`, no el archivo CSV anterior: la página lee el precio desde `Precio` y no utiliza una columna separada llamada `Precio por kg`.
 
