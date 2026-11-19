@@ -821,21 +821,24 @@
         }
       }
       let portionText = '';
-      if (entry.mode === 'peso') portionText = entry.value >= 1000 ? `${entry.value / 1000} kg` : `${entry.value} g`;
-      else if (entry.mode === 'monto') {
-        portionText = `Por monto: $${formatMoney(entry.value)}`;
-      }
-      else {
+      if (entry.mode === 'unidad') {
         const unit = product.saleType === 'pieza-peso'
           ? Number(entry.value) === 1 ? 'pieza' : 'piezas'
           : entry.unit || product.unit || 'unidad';
         portionText = `${entry.value} ${escapeHtml(unit)}`;
       }
       const weightEstimate = product.saleType === 'peso' && entry.mode === 'monto' ? parseDecimal(entry.weightEstimate) : 0;
-      const weightEstimateText = weightEstimate ? `${formatGrams(weightEstimate)} aproximadamente` : '';
+      let weightInfoText = '';
+      if (product.saleType === 'peso' && entry.mode === 'peso') {
+        weightInfoText = formatGrams(entry.value);
+      } else if (product.saleType === 'peso' && entry.mode === 'monto') {
+        weightInfoText = weightEstimate ? `${formatGrams(weightEstimate)} aprox.` : 'Peso por confirmar';
+      } else if (product.saleType === 'pieza-peso') {
+        weightInfoText = 'Peso al pesar';
+      }
       const priceText = product.saleType === 'pieza-peso'
         ? 'Por confirmar al pesar'
-        : entry.estimated > 0 ? `$${formatMoney(entry.estimated)} MXN` : 'Precio por confirmar';
+        : entry.estimated > 0 ? `$${formatMoney(entry.estimated)}` : 'Por confirmar';
       const pricePerKg = parseDecimal(product.price);
       const pricePerKgText = product.saleType === 'pieza-peso'
         ? pricePerKg > 0 ? `$${formatMoney(pricePerKg)} / kg` : 'Precio por kg por confirmar'
@@ -845,12 +848,14 @@
         <div class="drawer-item-details">
           <div class="drawer-item-main">
             <strong>${escapeHtml(product.name)}</strong>
-            <span class="drawer-item-portion">${portionText}</span>
+            ${portionText ? `<span class="drawer-item-portion">${portionText}</span>` : ''}
             <div class="drawer-item-actions"><button type="button" class="drawer-item-edit" data-edit="${escapeHtml(product.id)}" aria-label="Modificar cantidad de ${escapeHtml(product.name)}">Editar</button><button type="button" class="drawer-item-remove" data-remove="${escapeHtml(product.id)}" aria-label="Quitar ${escapeHtml(product.name)}">Quitar</button></div>
           </div>
           <div class="drawer-item-summary">
-            <strong class="drawer-item-price">${priceText}</strong>
-            ${weightEstimateText ? `<span class="drawer-item-weight-estimate">${weightEstimateText}</span>` : ''}
+            <div class="drawer-item-price-line">
+              ${weightInfoText ? `<span class="drawer-item-weight-estimate">${weightInfoText}</span>` : ''}
+              <strong class="drawer-item-price">${priceText}</strong>
+            </div>
             ${pricePerKgText ? `<span class="drawer-item-unit-price">${pricePerKgText}</span>` : ''}
           </div>
         </div>
