@@ -82,6 +82,8 @@
   const filterList = document.querySelector('#filter-list');
   const productGrid = document.querySelector('#product-grid');
   const searchInput = document.querySelector('#product-search');
+  const quickSearchForm = document.querySelector('#quick-search-form');
+  const quickSearchInput = document.querySelector('#quick-search');
   const showMoreButton = document.querySelector('#show-more');
   const catalogCount = document.querySelector('#catalog-count');
   const listOpenButton = document.querySelector('#list-open');
@@ -424,6 +426,7 @@
         const isSelected = selected.has(product.id);
         const isOut = Boolean(product.isOutOfStock);
         const isBestseller = Boolean(product.isBestseller && !isOut);
+        const isSpecial = Boolean(product.isSpecial && !isOut);
         const saleUnit = product.saleType === 'peso'
           ? 'Por kilogramo'
           : product.saleType === 'pieza-peso'
@@ -434,12 +437,14 @@
 
         const cardClasses = ['product-card'];
         if (isOut) cardClasses.push('is-out-of-stock');
+        if (isSpecial) cardClasses.push('is-special');
 
         return `<article class="${cardClasses.join(' ')}" style="animation-delay:${Math.min(index, 7) * 35}ms">
           <div class="product-image">
             <img src="${escapeHtml(formatImageUrl(product.image))}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="this.onerror=null;this.src='assets/images/logo-mascota.jpeg';">
             <span class="product-tag">${isOut ? 'Agotado hoy' : escapeHtml(product.category)}</span>
             ${isBestseller ? '<span class="product-badge-bestseller">★ Más vendido</span>' : ''}
+            ${isSpecial ? '<span class="product-badge-special">✦ Llegó hoy</span>' : ''}
             ${isOut 
               ? '<button class="add-product is-out-stock-btn" type="button" aria-disabled="true">Agotado</button>' 
               : `<button class="add-product${isSelected ? ' is-added' : ''}" type="button" data-add="${escapeHtml(product.id)}" aria-label="${isSelected ? 'Quitar' : 'Agregar'} ${escapeHtml(product.name)} ${isSelected ? 'de' : 'a'} mi lista" aria-pressed="${isSelected}">${isSelected ? '✓' : '+'}</button>`
@@ -967,7 +972,21 @@
     });
   });
 
-  searchInput.addEventListener('input', () => { visibleCount = pageSize; renderProducts(); });
+  searchInput.addEventListener('input', () => {
+    quickSearchInput.value = searchInput.value;
+    visibleCount = pageSize;
+    renderProducts();
+  });
+  quickSearchInput.addEventListener('input', () => {
+    searchInput.value = quickSearchInput.value;
+    setCategory('Todos');
+  });
+  quickSearchForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    searchInput.value = quickSearchInput.value;
+    setCategory('Todos');
+    document.querySelector('#productos').scrollIntoView({ behavior: 'smooth' });
+  });
   showMoreButton.addEventListener('click', () => { visibleCount += pageSize; renderProducts(); });
   listOpenButton.addEventListener('click', openDrawer);
   document.querySelector('#drawer-close').addEventListener('click', closeDrawer);
