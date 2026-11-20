@@ -82,6 +82,8 @@
   const filterList = document.querySelector('#filter-list');
   const productGrid = document.querySelector('#product-grid');
   const searchInput = document.querySelector('#product-search');
+  const heroSearchForm = document.querySelector('#hero-search-form');
+  const heroSearchInput = document.querySelector('#hero-search');
   const quickSearchForm = document.querySelector('#quick-search-form');
   const quickSearchInput = document.querySelector('#quick-search');
   const showMoreButton = document.querySelector('#show-more');
@@ -972,20 +974,45 @@
     });
   });
 
+  function applySearchTerm(term) {
+    searchInput.value = term;
+    quickSearchInput.value = term;
+    heroSearchInput.value = term;
+    setCategory('Todos');
+  }
+
+  function navigateToSearchResult(term) {
+    applySearchTerm(term);
+    const firstResult = productGrid.querySelector('.product-card');
+    if (!firstResult) {
+      document.querySelector('#productos').scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+
+    firstResult.classList.add('search-result-highlight');
+    firstResult.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    window.setTimeout(() => firstResult.classList.remove('search-result-highlight'), 2200);
+  }
+
   searchInput.addEventListener('input', () => {
     quickSearchInput.value = searchInput.value;
+    heroSearchInput.value = searchInput.value;
     visibleCount = pageSize;
     renderProducts();
   });
   quickSearchInput.addEventListener('input', () => {
-    searchInput.value = quickSearchInput.value;
-    setCategory('Todos');
+    applySearchTerm(quickSearchInput.value);
+  });
+  heroSearchInput.addEventListener('input', () => {
+    applySearchTerm(heroSearchInput.value);
   });
   quickSearchForm.addEventListener('submit', (event) => {
     event.preventDefault();
-    searchInput.value = quickSearchInput.value;
-    setCategory('Todos');
-    document.querySelector('#productos').scrollIntoView({ behavior: 'smooth' });
+    navigateToSearchResult(quickSearchInput.value);
+  });
+  heroSearchForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    navigateToSearchResult(heroSearchInput.value);
   });
   showMoreButton.addEventListener('click', () => { visibleCount += pageSize; renderProducts(); });
   listOpenButton.addEventListener('click', openDrawer);
