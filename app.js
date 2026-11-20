@@ -84,8 +84,9 @@
   const searchInput = document.querySelector('#product-search');
   const heroSearchForm = document.querySelector('#hero-search-form');
   const heroSearchInput = document.querySelector('#hero-search');
-  const quickSearchForm = document.querySelector('#quick-search-form');
-  const quickSearchInput = document.querySelector('#quick-search');
+  const heroSearchSuggestions = document.querySelector('#hero-search-suggestions');
+  const productSearchSuggestions = document.querySelector('#product-search-suggestions');
+  const catalogSearch = document.querySelector('.catalog-search-autocomplete');
   const showMoreButton = document.querySelector('#show-more');
   const catalogCount = document.querySelector('#catalog-count');
   const listOpenButton = document.querySelector('#list-open');
@@ -398,10 +399,10 @@
   }
 
   function getFilteredProducts() {
-    const term = searchInput.value.trim().toLocaleLowerCase('es-MX');
+    const term = normalize(searchInput.value);
     const matches = products.filter((product) => {
       const matchesCategory = activeCategory === 'Todos' || product.category === activeCategory;
-      const matchesSearch = !term || `${product.name} ${product.category} ${product.unit}`.toLocaleLowerCase('es-MX').includes(term);
+      const matchesSearch = !term || normalize(`${product.name} ${product.category} ${product.unit}`).includes(term);
       return matchesCategory && matchesSearch;
     });
 
@@ -441,7 +442,7 @@
         if (isOut) cardClasses.push('is-out-of-stock');
         if (isSpecial) cardClasses.push('is-special');
 
-        return `<article class="${cardClasses.join(' ')}" style="animation-delay:${Math.min(index, 7) * 35}ms">
+        return `<article class="${cardClasses.join(' ')}" data-product-id="${escapeHtml(product.id)}" style="animation-delay:${Math.min(index, 7) * 35}ms">
           <div class="product-image">
             <img src="${escapeHtml(formatImageUrl(product.image))}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="this.onerror=null;this.src='assets/images/logo-mascota.jpeg';">
             <span class="product-tag">${isOut ? 'Agotado hoy' : escapeHtml(product.category)}</span>
@@ -974,16 +975,101 @@
     });
   });
 
-  function applySearchTerm(term) {
-    searchInput.value = term;
-    quickSearchInput.value = term;
-    heroSearchInput.value = term;
-    setCategory('Todos');
+  function hideSearchSuggestions() {
+    [
+      [heroSearchInput, heroSearchSuggestions],
+      [searchInput, productSearchSuggestions]
+    ].forEach(([input, list]) => {
+      list.hidden = true;
+      input.setAttribute('aria-expanded', 'false');
+    });
   }
 
-  function navigateToSearchResult(term) {
-    applySearchTerm(term);
-    const firstResult = productGrid.querySelector('.product-card');
+  function getSearchSuggestions(term) {
+    const normalizedTerm = normalize(term);
+    if (normalizedTerm.length < 2) return [];
+
+    return products
+      .filter((product) => normalize(product.name).includes(normalizedTerm) || normalize(product.category).includes(normalizedTerm))
+      .sort((a, b) => {
+        const aName = normalize(a.name);
+        const bName = normalize(b.name);
+        const aStartsWithTerm = aName.startsWith(normalizedTerm);
+        const bStartsWithTerm = bName.startsWith(normalizedTerm);
+        if (aStartsWithTerm !== bStartsWithTerm) return aStartsWithTerm ? -1 : 1;
+        if (a.isOutOfStock !== b.isOutOfStock) return a.isOutOfStock ? 1 : -1;
+        return a.name.localeCompare(b.name, 'es-MX');
+      })
+      .slice(0, 6);
+  }
+
+  function renderSearchSuggestions(term, activeInput) {
+    const suggestions = getSearchSuggestions(term);
+    const fields = [
+      [heroSearchInput, heroSearchSuggestions],
+      [searchInput, productSearchSuggestions]
+    ];
+
+    fields.forEach(([input, list]) => {
+      const isActive = input === activeInput && suggestions.length > 0;
+      list.innerHTML = isActive
+        ? suggestions.map((product) => `<button class="search-suggestion" type="button" role="option" data-product-id="${escapeHtml(product.id)}">
+            <span class="search-suggestion-copy"><strong>${escapeHtml(product.name)}</strong><small>${escapeHtml(product.category || 'Producto')}${product.isOutOfStock ? ' · Agotado' : ''}</small></span>
+            <span class="search-suggestion-arrow" aria-hidden="true">↗</span>
+          </button>`).join('')
+        : '';
+      list.hidden = !isActive;
+      input.setAttribute('aria-expanded', String(isActive));
+
+      if (!isActive) return;
+      list.querySelectorAll('[data-product-id]').forEach((option) => {
+        option.addEventListener('click', () => {
+          const product = products.find((item) => String(item.id) === option.dataset.productId);
+          if (product) navigateToSearchResult(product.name, product.id);
+        });
+        option.addEventListener('keydown', (event) => {
+          const options = [...list.querySelectorAll('[role="option"]')];
+          const index = options.indexOf(option);
+          if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            options[Math.min(index + 1, options.length - 1)].focus();
+          } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            if (index === 0) input.focus();
+            else options[index - 1].focus();
+          } else if (event.key === 'Escape') {
+            event.preventDefault();
+            hideSearchSuggestions();
+            input.focus();
+          }
+        });
+      });
+    });
+  }
+
+  function applySearchTerm(term, activeInput) {
+    searchInput.value = term;
+    heroSearchInput.value = term;
+    visibleCount = pageSize;
+    setCategory('Todos');
+    renderSearchSuggestions(term, activeInput);
+  }
+
+  function navigateToSearchResult(term, productId) {
+    applySearchTerm(term, null);
+    const filteredProducts = getFilteredProducts();
+    const productIndex = productId === undefined
+      ? -1
+      : filteredProducts.findIndex((product) => String(product.id) === String(productId));
+    if (productIndex >= visibleCount) {
+      visibleCount = productIndex + 1;
+      renderProducts();
+    }
+
+    const resultCards = [...productGrid.querySelectorAll('.product-card')];
+    const firstResult = productId === undefined
+      ? resultCards[0]
+      : resultCards.find((card) => card.dataset.productId === String(productId));
     if (!firstResult) {
       document.querySelector('#productos').scrollIntoView({ behavior: 'smooth' });
       return;
@@ -994,25 +1080,36 @@
     window.setTimeout(() => firstResult.classList.remove('search-result-highlight'), 2200);
   }
 
-  searchInput.addEventListener('input', () => {
-    quickSearchInput.value = searchInput.value;
-    heroSearchInput.value = searchInput.value;
-    visibleCount = pageSize;
-    renderProducts();
+  function handleSearchKeydown(event, input, list) {
+    if (event.key === 'ArrowDown' && !list.hidden) {
+      event.preventDefault();
+      list.querySelector('[role="option"]')?.focus();
+    } else if (event.key === 'Escape' && !list.hidden) {
+      event.preventDefault();
+      hideSearchSuggestions();
+    }
+  }
+
+  searchInput.addEventListener('input', () => applySearchTerm(searchInput.value, searchInput));
+  heroSearchInput.addEventListener('input', () => applySearchTerm(heroSearchInput.value, heroSearchInput));
+  searchInput.addEventListener('focus', () => renderSearchSuggestions(searchInput.value, searchInput));
+  heroSearchInput.addEventListener('focus', () => renderSearchSuggestions(heroSearchInput.value, heroSearchInput));
+  searchInput.addEventListener('keydown', (event) => {
+    handleSearchKeydown(event, searchInput, productSearchSuggestions);
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      const firstSuggestion = productSearchSuggestions.querySelector('[data-product-id]');
+      navigateToSearchResult(searchInput.value, firstSuggestion?.dataset.productId);
+    }
   });
-  quickSearchInput.addEventListener('input', () => {
-    applySearchTerm(quickSearchInput.value);
-  });
-  heroSearchInput.addEventListener('input', () => {
-    applySearchTerm(heroSearchInput.value);
-  });
-  quickSearchForm.addEventListener('submit', (event) => {
-    event.preventDefault();
-    navigateToSearchResult(quickSearchInput.value);
-  });
+  heroSearchInput.addEventListener('keydown', (event) => handleSearchKeydown(event, heroSearchInput, heroSearchSuggestions));
   heroSearchForm.addEventListener('submit', (event) => {
     event.preventDefault();
-    navigateToSearchResult(heroSearchInput.value);
+    const firstSuggestion = heroSearchSuggestions.querySelector('[data-product-id]');
+    navigateToSearchResult(heroSearchInput.value, firstSuggestion?.dataset.productId);
+  });
+  document.addEventListener('click', (event) => {
+    if (!heroSearchForm.contains(event.target) && !catalogSearch.contains(event.target)) hideSearchSuggestions();
   });
   showMoreButton.addEventListener('click', () => { visibleCount += pageSize; renderProducts(); });
   listOpenButton.addEventListener('click', openDrawer);

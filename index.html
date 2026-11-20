@@ -38,7 +38,10 @@
         <form class="hero-search" id="hero-search-form" role="search" aria-label="Buscar un producto">
           <span aria-hidden="true">⌕</span>
           <label class="sr-only" for="hero-search">Buscar producto, por ejemplo, papaya</label>
-          <input id="hero-search" type="search" placeholder="Busca un producto, por ejemplo, papaya" autocomplete="off">
+          <div class="hero-search-autocomplete">
+            <input id="hero-search" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-haspopup="listbox" aria-controls="hero-search-suggestions" placeholder="Producto, ej. papaya" autocomplete="off">
+            <div class="search-suggestions" id="hero-search-suggestions" role="listbox" hidden></div>
+          </div>
           <button type="submit">Buscar <span aria-hidden="true">↗</span></button>
         </form>
         <div class="hero-actions"><a class="button button-dark" href="#productos">Explorar productos <span aria-hidden="true">↓</span></a><a class="text-link" data-wa href="#pedidos">Pedir por WhatsApp <span aria-hidden="true">↗</span></a></div>
@@ -59,12 +62,6 @@
     <section class="category-section section-pad" id="categorias">
       <div class="wrap">
         <div class="section-heading reveal"><div><p class="eyebrow"><span class="eyebrow-line"></span> Lo que se antoja</p><h2>Un mercado de<br><em>muchos sabores.</em></h2></div><p class="section-intro">Para la comida de hoy, el antojo de la tarde o esa receta que ya tienes en mente.</p></div>
-        <form class="quick-search reveal" id="quick-search-form" role="search" aria-label="Buscar productos o categorías">
-          <span aria-hidden="true">⌕</span>
-          <label class="sr-only" for="quick-search">Buscar producto o categoría</label>
-          <input id="quick-search" type="search" placeholder="Busca un producto o categoría" autocomplete="off">
-          <button type="submit">Buscar <span aria-hidden="true">↗</span></button>
-        </form>
         <div class="category-grid" id="category-grid" aria-label="Categorías de productos"></div>
         <p class="availability-note"><span aria-hidden="true">✳</span> El surtido y los precios pueden variar. Escríbenos para confirmar disponibilidad.</p>
       </div>
@@ -83,7 +80,13 @@
           <div class="specials-row" id="specials-row"></div>
         </div>
 
-        <div class="product-tools reveal"><div class="filter-list" id="filter-list" role="group" aria-label="Filtrar productos"></div><label class="search-box"><span aria-hidden="true">⌕</span><span class="sr-only">Buscar productos</span><input id="product-search" type="search" placeholder="Busca un producto" autocomplete="off"></label></div>
+        <div class="product-tools reveal">
+          <div class="filter-list" id="filter-list" role="group" aria-label="Filtrar productos"></div>
+          <div class="catalog-search-autocomplete" role="search" aria-label="Buscar en el catálogo">
+            <label class="search-box"><span aria-hidden="true">⌕</span><span class="sr-only">Buscar productos</span><input id="product-search" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-haspopup="listbox" aria-controls="product-search-suggestions" placeholder="Busca un producto" autocomplete="off"></label>
+            <div class="search-suggestions" id="product-search-suggestions" role="listbox" hidden></div>
+          </div>
+        </div>
         <div class="product-grid" id="product-grid" aria-live="polite"></div>
         <div class="catalog-footer"><p id="catalog-count"></p><button class="button button-outline" id="show-more" type="button">Ver más productos <span aria-hidden="true">↓</span></button></div>
       </div>
