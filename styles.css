@@ -270,12 +270,13 @@ body::after{content:"";position:fixed;z-index:80;inset:0;pointer-events:none;opa
 .drawer-item-edit{border:0;background:none;color:var(--green-2);font:700 11px var(--sans);cursor:pointer;padding:2px 6px;border-radius:6px;transition:background .2s}
 .drawer-item-edit:hover{background:#e8eedf}
 @media(max-width:390px){
-  .drawer-item-details{grid-template-columns:minmax(0,1fr) minmax(102px,auto);gap:8px}
+  .drawer-item-details{grid-template-columns:minmax(0,1fr) 112px;gap:8px}
+  .drawer-item-main>strong{width:100%;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;line-height:1.2}
   .drawer-item-actions{gap:4px}
   .drawer-item-edit,.drawer-item-remove{padding:2px 4px;font-size:10px}
 }
 @media(max-width:350px){
-  .drawer-item-details{grid-template-columns:minmax(0,1fr) minmax(88px,auto);gap:6px}
+  .drawer-item-details{grid-template-columns:minmax(0,1fr) 96px;gap:6px}
   .drawer-item-price{font-size:13px}
   .drawer-item-weight-estimate{font-size:9.5px}
 }

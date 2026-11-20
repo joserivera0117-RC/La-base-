@@ -845,7 +845,7 @@
         weightInfoText = 'Peso al pesar';
       }
       const priceText = product.saleType === 'pieza-peso'
-        ? 'Por confirmar al pesar'
+        ? 'Por confirmar'
         : entry.estimated > 0 ? `$${formatMoney(entry.estimated)}` : 'Por confirmar';
       const pricePerKg = parseDecimal(product.price);
       const pricePerKgText = product.saleType === 'pieza-peso'
