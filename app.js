@@ -457,15 +457,16 @@
         const isBestseller = Boolean(product.isBestseller && !isOut);
         const isSpecial = Boolean(product.isSpecial && !isOut);
         const pieceWeightHint = product.pieceWeightGrams > 0
-          ? `<small>≈ ${formatGrams(product.pieceWeightGrams)}/pza</small>`
+          ? `<small>≈${product.pieceWeightGrams >= 1000 ? `${formatQuantity(product.pieceWeightGrams / 1000)}kg` : `${formatQuantity(product.pieceWeightGrams)}g`}/pza</small>`
           : '';
         const saleUnit = product.saleType === 'peso'
-          ? product.allowPieceOrder ? 'Kg o pieza' : 'Por kg'
+          ? product.allowPieceOrder ? 'Kg/pza' : 'Por kg'
           : product.saleType === 'pieza-peso'
-            ? 'Pieza · precio/kg'
+            ? 'Pieza/kg'
             : product.saleType === 'monto'
               ? 'Por monto'
               : `Por ${product.unit || 'unidad'}`;
+        const cardPrice = productPriceLabel(product).replace(/\s*\/\s*/g, '/');
 
         const cardClasses = ['product-card'];
         if (isOut) cardClasses.push('is-out-of-stock');
@@ -489,7 +490,7 @@
             </div>
             <div class="product-sale-line">
               <span class="product-sale-unit">${escapeHtml(saleUnit)}${pieceWeightHint}</span>
-              <strong class="product-price">${productPriceLabel(product)}</strong>
+              <strong class="product-price">${cardPrice}</strong>
             </div>
             ${isOut ? '<p class="product-availability"><span class="product-badge">Agotado</span>Surtido en camino</p>' : ''}
           </div>
