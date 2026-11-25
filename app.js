@@ -527,7 +527,7 @@
   const portionConfirm = document.querySelector('#portion-confirm-btn');
   let activePortionProduct = null;
   let portionMode = 'peso';
-  let portionValue = 250;
+  let portionValue = 500;
 
   function openPortionModal(product, selectedEntry = null) {
     activePortionProduct = product;
@@ -553,7 +553,7 @@
         : 'peso';
       portionValue = selectedEntry?.mode === portionMode
         ? parseDecimal(selectedEntry.value)
-        : portionMode === 'pieza' ? 1 : portionMode === 'monto' ? getMinimumAmount(product) : 250;
+        : portionMode === 'pieza' ? 1 : portionMode === 'monto' ? getMinimumAmount(product) : 500;
       document.querySelectorAll('.portion-tab-btn').forEach((button) => {
         const isActive = button.dataset.tab === portionMode;
         button.classList.toggle('is-active', isActive);
@@ -649,7 +649,9 @@
     const product = activePortionProduct;
     const pieceWeight = parseDecimal(product.pieceWeightGrams);
     portionValue = Math.max(1, Math.floor(parseDecimal(portionValue) || 1));
-    const pieceHint = pieceWeight ? `≈ ${formatGrams(pieceWeight)} por pieza` : '';
+    const pieceHint = pieceWeight
+      ? `≈ ${formatGrams(pieceWeight)} por pieza · importe orientativo`
+      : 'El importe final se confirma al pesar.';
     body.innerHTML = `
       <div class="portion-piece-selector">
         <button type="button" class="portion-stepper-btn" id="portion-minus" aria-label="Disminuir piezas">−</button>
@@ -720,8 +722,8 @@
     weightEstimate.hidden = !canEstimateWeight;
     if (canEstimateWeight) {
       weightEstimate.textContent = approximateGrams
-        ? `Aproximadamente ${formatGrams(approximateGrams)} por este monto. Es un cálculo orientativo; el peso final puede variar.`
-        : 'Agrega el precio por kg para mostrar una estimación de peso.';
+        ? `≈ ${formatGrams(approximateGrams)} de peso · puede variar al pesar.`
+        : 'Agrega el precio por kg para estimar el peso.';
     } else {
       weightEstimate.textContent = '';
     }
@@ -744,10 +746,10 @@
     const minimum = activePortionProduct.minimum || 50;
     const increment = activePortionProduct.increment || 50;
     portionValue = Math.max(portionValue, minimum);
-    const presets = [250, 500, 1000];
+    const presets = [500, 1000];
     body.innerHTML = `
       <div class="portion-presets-grid">
-        ${presets.map((grams) => `<button type="button" class="portion-preset-btn" data-grams="${grams}"${grams < minimum ? ' disabled' : ''}><strong>${grams === 250 ? '¼ kg' : grams === 500 ? '½ kg' : '1 kg'}</strong><small>${grams} g</small></button>`).join('')}
+        ${presets.map((grams) => `<button type="button" class="portion-preset-btn" data-grams="${grams}"${grams < minimum ? ' disabled' : ''}><strong>${grams === 500 ? '½ kg' : '1 kg'}</strong><small>${grams} g</small></button>`).join('')}
       </div>
       <div class="portion-manual-group">
         <label class="portion-manual-label" for="portion-grams">O escribe el peso en gramos</label>
@@ -855,7 +857,7 @@
         item.setAttribute('aria-pressed', String(active));
       });
       portionValue = portionMode === 'peso'
-        ? 250
+        ? 500
         : portionMode === 'pieza' ? 1 : getMinimumAmount(activePortionProduct);
       renderPortionModeFields();
     });
