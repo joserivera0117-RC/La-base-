@@ -405,8 +405,8 @@
           <p>Por ${escapeHtml(product.unit || 'unidad')}</p>
           <div class="special-card-bottom">
             <span class="special-card-price">${priceText || 'Consultar'}</span>
-            <button class="special-card-btn${isSelected ? ' is-added' : ''}" type="button" data-add="${escapeHtml(product.id)}">
-              ${isSelected ? '✓ En tu lista' : '+ Agregar'}
+            <button class="special-card-btn${isSelected ? ' is-added' : ''}" type="button" data-add="${escapeHtml(product.id)}" aria-label="${isSelected ? 'Modificar' : 'Agregar'} ${escapeHtml(product.name)} ${isSelected ? 'en' : 'a'} mi lista" aria-pressed="${isSelected}">
+              ${isSelected ? '✓ Modificar' : '+ Agregar'}
             </button>
           </div>
         </div>
@@ -445,18 +445,18 @@
     if (!visible.length) {
       productGrid.innerHTML = '<div class="empty-results"><strong>No encontramos ese producto</strong>Prueba con otra palabra o categoría.</div>';
     } else {
-      productGrid.innerHTML = visible.map((product, index) => {
+      productGrid.innerHTML =       visible.map((product) => {
         const isSelected = selected.has(product.id);
         const isOut = Boolean(product.isOutOfStock);
         const isBestseller = Boolean(product.isBestseller && !isOut);
         const isSpecial = Boolean(product.isSpecial && !isOut);
         const pieceWeightHint = product.pieceWeightGrams > 0
-          ? `<small>≈ ${formatGrams(product.pieceWeightGrams)} por pieza</small>`
+          ? `<small>≈ ${formatGrams(product.pieceWeightGrams)}/pza</small>`
           : '';
         const saleUnit = product.saleType === 'peso'
-          ? product.allowPieceOrder ? 'Por peso o por pieza' : 'Por kilogramo'
+          ? product.allowPieceOrder ? 'Kg o pieza' : 'Por kg'
           : product.saleType === 'pieza-peso'
-            ? 'Por pieza · precio por kg'
+            ? 'Pieza · precio/kg'
             : product.saleType === 'monto'
               ? 'Por monto'
               : `Por ${product.unit || 'unidad'}`;
@@ -464,8 +464,9 @@
         const cardClasses = ['product-card'];
         if (isOut) cardClasses.push('is-out-of-stock');
         if (isSpecial) cardClasses.push('is-special');
+        if (isSelected) cardClasses.push('is-selected');
 
-        return `<article class="${cardClasses.join(' ')}" data-product-id="${escapeHtml(product.id)}" style="animation-delay:${Math.min(index, 7) * 35}ms">
+        return `<article class="${cardClasses.join(' ')}" data-product-id="${escapeHtml(product.id)}">
           <div class="product-image">
             <img src="${escapeHtml(formatImageUrl(product.image))}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="this.onerror=null;this.src='assets/images/logo-mascota.jpeg';">
             <span class="product-tag">${isOut ? 'Agotado hoy' : escapeHtml(product.category)}</span>
@@ -473,7 +474,7 @@
             ${isSpecial ? '<span class="product-badge-special">✦ Llegó hoy</span>' : ''}
             ${isOut 
               ? '<button class="add-product is-out-stock-btn" type="button" aria-disabled="true">Agotado</button>' 
-              : `<button class="add-product${isSelected ? ' is-added' : ''}" type="button" data-add="${escapeHtml(product.id)}" aria-label="${isSelected ? 'Quitar' : 'Agregar'} ${escapeHtml(product.name)} ${isSelected ? 'de' : 'a'} mi lista" aria-pressed="${isSelected}">${isSelected ? '✓' : '+'}</button>`
+              : `<button class="add-product${isSelected ? ' is-added' : ''}" type="button" data-add="${escapeHtml(product.id)}" aria-label="${isSelected ? 'Modificar' : 'Agregar'} ${escapeHtml(product.name)} ${isSelected ? 'en' : 'a'} mi lista" aria-pressed="${isSelected}">${isSelected ? '✓' : '+'}</button>`
             }
           </div>
           <div class="product-info">
@@ -484,7 +485,7 @@
               <span class="product-sale-unit">${escapeHtml(saleUnit)}${pieceWeightHint}</span>
               <strong class="product-price">${productPriceLabel(product)}</strong>
             </div>
-            <p class="product-availability">${isOut ? '<span class="product-badge">Agotado</span>Surtido en camino' : 'Sujeto a disponibilidad'}</p>
+            ${isOut ? '<p class="product-availability"><span class="product-badge">Agotado</span>Surtido en camino</p>' : ''}
           </div>
         </article>`;
       }).join('');
@@ -498,14 +499,19 @@
     const product = products.find((item) => item.id === id);
     if (!product) return;
     if (selected.has(id)) {
-      selected.delete(id);
-      saveSelected();
-      renderProducts();
-      renderSpecialsShowcase();
-      renderDrawerItems();
+      openPortionModal(product, selected.get(id));
       return;
     }
     openPortionModal(product);
+  }
+
+  function removeProductFromList(id) {
+    if (!selected.has(id)) return;
+    selected.delete(id);
+    saveSelected();
+    renderProducts();
+    renderSpecialsShowcase();
+    renderDrawerItems();
   }
 
   const portionBackdrop = document.querySelector('#portion-modal-backdrop');
@@ -564,7 +570,8 @@
       const savedUnitQuantity = selectedEntry
         && (product.saleType !== 'pieza-peso' || selectedEntry.mode === 'unidad');
       portionValue = savedUnitQuantity ? Math.max(minimum, parseDecimal(selectedEntry.value)) : minimum;
-      renderUnitFields(minimum, increment);
+      if (product.saleType === 'pieza-peso') renderPieceFields();
+      else renderUnitFields(minimum, increment);
     }
 
     portionBackdrop.hidden = false;
@@ -577,19 +584,19 @@
     const price = parseDecimal(product.price);
     if (product.saleType === 'pieza-peso') {
       const pieceWeightHint = product.pieceWeightGrams > 0
-        ? ` · aprox. ${formatGrams(product.pieceWeightGrams)} por pieza`
+        ? ` · ≈ ${formatGrams(product.pieceWeightGrams)}/pza`
         : '';
-      return price
-        ? `Pieza entera${pieceWeightHint} · $${formatMoney(price)} por kg · total final al pesar`
-        : `Pieza entera${pieceWeightHint} · precio por kg por confirmar`;
+      return price ? `$${formatMoney(price)}/kg${pieceWeightHint}` : 'Precio por kg pendiente';
     }
-    if (product.saleType === 'monto') return `Venta por monto · desde $${formatMoney(product.minimum || 2)} · sin peso estándar`;
-    if (!price) return `${product.unit || 'unidad'} · Consulta disponibilidad`;
+    if (product.saleType === 'monto') return `Desde $${formatMoney(product.minimum || 2)} · por monto`;
+    if (!price) return product.saleType === 'peso' && product.allowPieceOrder
+      ? 'Por kg o pieza · precio pendiente'
+      : `${product.unit || 'unidad'} · precio pendiente`;
     if (product.saleType === 'peso') {
       const pieceOptionHint = product.allowPieceOrder
-        ? ` · también por pieza${product.pieceWeightGrams > 0 ? ` (aprox. ${formatGrams(product.pieceWeightGrams)} c/u)` : ''}`
+        ? ` · kg o pieza${product.pieceWeightGrams > 0 ? ` · ≈ ${formatGrams(product.pieceWeightGrams)}/pza` : ''}`
         : '';
-      return `${product.unit || 'kg'} · $${formatMoney(price)} por kg${pieceOptionHint} · sujeto a disponibilidad`;
+      return `$${formatMoney(price)}/kg${pieceOptionHint}`;
     }
     return `$${formatMoney(price)} por ${product.unit || 'unidad'} · sujeto a disponibilidad`;
   }
@@ -636,38 +643,31 @@
     const product = activePortionProduct;
     const pieceWeight = parseDecimal(product.pieceWeightGrams);
     portionValue = Math.max(1, Math.floor(parseDecimal(portionValue) || 1));
-    const pieceHint = pieceWeight
-      ? `Aproximadamente ${formatGrams(pieceWeight)} por pieza. El peso real puede variar.`
-      : 'Peso aproximado pendiente. Te confirmaremos el peso y el importe al preparar tu pedido.';
+    const pieceHint = pieceWeight ? `≈ ${formatGrams(pieceWeight)} por pieza` : '';
     body.innerHTML = `
-      <div class="portion-piece-guidance">
-        <strong>Elige cuántas piezas quieres</strong>
-        <small>${pieceHint}</small>
-      </div>
-      <div class="portion-stepper-wrap">
+      <div class="portion-piece-selector">
         <button type="button" class="portion-stepper-btn" id="portion-minus" aria-label="Disminuir piezas">−</button>
-        <strong class="portion-stepper-val" id="portion-piece-value">${portionValue}</strong>
+        <div class="portion-piece-count">
+          <strong id="portion-piece-value">${portionValue}</strong>
+          <small id="portion-piece-unit">${portionValue === 1 ? 'pieza' : 'piezas'}</small>
+        </div>
         <button type="button" class="portion-stepper-btn" id="portion-plus" aria-label="Aumentar piezas">+</button>
       </div>
-      <div class="portion-manual-group">
-        <label class="portion-manual-label" for="portion-piece">Cantidad en piezas</label>
-        <div class="portion-input-wrap"><input id="portion-piece" type="number" inputmode="numeric" min="1" step="1" value="${portionValue}"><span>piezas</span></div>
-      </div>`;
+      ${pieceHint ? `<p class="portion-piece-hint">${pieceHint}</p>` : ''}`;
 
     const minus = body.querySelector('#portion-minus');
     const plus = body.querySelector('#portion-plus');
-    const input = body.querySelector('#portion-piece');
     const valueLabel = body.querySelector('#portion-piece-value');
+    const unitLabel = body.querySelector('#portion-piece-unit');
     const applyValue = (value) => {
       const numeric = Math.max(1, Math.floor(parseDecimal(value) || 1));
       portionValue = numeric;
-      input.value = String(numeric);
       valueLabel.textContent = String(numeric);
+      unitLabel.textContent = numeric === 1 ? 'pieza' : 'piezas';
       updatePortionSummary();
     };
     minus.addEventListener('click', () => applyValue(portionValue - 1));
     plus.addEventListener('click', () => applyValue(portionValue + 1));
-    input.addEventListener('input', () => applyValue(input.value));
     updatePortionSummary();
   }
 
@@ -701,25 +701,21 @@
 
     const hasPieceEstimate = isApproxPieceMode && pieceWeightGrams > 0 && pricePerKg > 0;
     document.querySelector('#portion-calc-label').textContent = isApproxPieceMode
-      ? 'Importe aproximado'
+      ? 'Total aprox.'
       : portionMode === 'peso' ? 'Importe estimado por peso' : 'Importe estimado';
     document.querySelector('#portion-calc-value').textContent = isApproxPieceMode
-      ? hasPieceEstimate ? `$${formatMoney(amount)} MXN aprox.` : 'Por confirmar al pesar'
+      ? hasPieceEstimate ? `$${formatMoney(amount)} MXN` : 'Por confirmar'
       : `$${formatMoney(amount)} MXN`;
     document.querySelector('#modal-product-subtitle').dataset.summary = label;
 
     const weightEstimate = document.querySelector('#portion-weight-estimate');
     const canEstimateWeight = portionMode === 'monto' && product.saleType === 'peso';
     const approximateGrams = canEstimateWeight ? estimateGramsForAmount(product, value) : 0;
-    weightEstimate.hidden = !canEstimateWeight && !isApproxPieceMode;
+    weightEstimate.hidden = !canEstimateWeight;
     if (canEstimateWeight) {
       weightEstimate.textContent = approximateGrams
         ? `Aproximadamente ${formatGrams(approximateGrams)} por este monto. Es un cálculo orientativo; el peso final puede variar.`
         : 'Agrega el precio por kg para mostrar una estimación de peso.';
-    } else if (isApproxPieceMode) {
-      weightEstimate.textContent = hasPieceEstimate
-        ? `Peso aproximado para ${value} ${value === 1 ? 'pieza' : 'piezas'}: ${formatGrams(approximateTotalWeight)}. El precio final se confirma después de pesarlas.`
-        : 'Peso aproximado pendiente. El total definitivo se confirma después de pesar las piezas.';
     } else {
       weightEstimate.textContent = '';
     }
@@ -1002,7 +998,7 @@
     if (migratedSelection) saveSelected();
 
     drawerItems.querySelectorAll('[data-remove]').forEach((button) => {
-      button.addEventListener('click', () => toggleProduct(button.dataset.remove));
+      button.addEventListener('click', () => removeProductFromList(button.dataset.remove));
     });
     drawerItems.querySelectorAll('[data-edit]').forEach((button) => {
       button.addEventListener('click', () => editSelectedProduct(button.dataset.edit));
