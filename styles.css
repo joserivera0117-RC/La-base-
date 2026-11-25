@@ -207,7 +207,6 @@ body::after{content:"";position:fixed;z-index:80;inset:0;pointer-events:none;opa
   .drawer-head h2{font-size:38px!important}
   .drawer-hint{margin:5px 0 8px}
   .delivery-picker{padding:8px 10px}
-  .drawer-disclaimer{display:none}
 }
 .hero h1,.section-heading h2,.story-copy h2,.reasons-heading h2,.order-copy h2{font-family:'Anton',Impact,'Arial Narrow',var(--sans)}
 .swap-stage{transform:translateY(var(--scroll-drift,0px))}
@@ -324,6 +323,9 @@ body::after{content:"";position:fixed;z-index:80;inset:0;pointer-events:none;opa
 .drawer-total-row strong{font-family:var(--sans);font-size:22px;color:var(--green);letter-spacing:-.02em}
 .drawer-disclaimer{font-size:9px;line-height:1.55;color:#6e7367;margin:0 0 12px;padding:9px 11px;background:#f5f6ee;border-left:3px solid #ccd5ae;border-radius:4px}
 .drawer-disclaimer strong{color:var(--tomato)}
+@media(max-height:700px) and (max-width:760px){
+  .drawer-disclaimer{font-size:8px;line-height:1.35;margin-bottom:6px;padding:5px 8px}
+}
 
 /* Agotados con gracia visual */
 .product-card.is-out-of-stock{border-color:#e4e5db;background:#f9f9f4}
@@ -513,12 +515,22 @@ body::after{content:"";position:fixed;z-index:80;inset:0;pointer-events:none;opa
   .portion-modal-actions{gap:7px}
   .modal-btn-cancel,.modal-btn-confirm{padding-inline:10px;font-size:8.5px}
 }
+.favorite-toggle{position:absolute;z-index:3;left:10px;bottom:10px;width:34px;height:34px;display:grid;place-items:center;padding:0;border:1px solid #fffdf5;border-radius:50%;background:#fffdf1e8;color:var(--tomato);font:20px/1 var(--sans);cursor:pointer;transition:transform .2s,background .2s,color .2s}
+.favorite-toggle:hover{transform:scale(1.08)}
+.favorite-toggle:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.favorite-toggle.is-favorite{background:var(--tomato);color:#fff}
+.product-substitutes{margin-top:8px;padding-top:7px;border-top:1px solid #e6e5da}
+.product-substitutes-label{display:block;margin-bottom:5px;color:#66715e;font-size:9px;font-weight:700}
+.product-substitute-list{display:flex;flex-wrap:wrap;gap:5px}
+.product-substitute{min-height:26px;padding:4px 7px;border:1px solid #d5dcc8;border-radius:14px;background:#fffdf8;color:var(--green);font-size:9px;line-height:1.2;cursor:pointer}
+.product-substitute:hover,.product-substitute:focus-visible{border-color:var(--green);background:var(--green);color:#fff;outline:none}
 @media(max-width:390px){
   .wrap{width:min(calc(100% - 30px),var(--wrap))}
   .hero h1{font-size:43px!important}
   .order-customer-card{padding:18px}
   .order-customer-cancel,.order-customer-submit{font-size:8px}
   .portion-modal-card{padding:18px 14px!important}
+  .product-substitutes-label,.product-substitute{font-size:8px}
 }
 
 .product-grid{grid-template-columns:repeat(3,minmax(0,1fr))}

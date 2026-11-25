@@ -5,6 +5,7 @@
   const PHONE = '525543964883';
   const DEFAULT_MESSAGE = 'Hola, Recaudería La Base. Quiero consultar productos y hacer un pedido.';
   const ORDER_GREETING = 'Hola, quiero hacer un pedido en Recaudería La Base:';
+  const FAVORITES_FILTER = '__favorites__';
 
   // Enlace de Google Sheets (puede ser el enlace normal del navegador o el enlace publicado)
   const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1nw4bIXYRl5h0qIOIB5l5wG9okG_kH8DgG2DKTFCGR3o/edit?gid=1335044589#gid=1335044589';
@@ -129,6 +130,23 @@
   const saveSelected = () => {
     try { localStorage.setItem('labased_lista', JSON.stringify(Object.fromEntries(selected))); } catch (_) {}
   };
+  const favoriteIds = new Set();
+  try {
+    const savedFavorites = JSON.parse(localStorage.getItem('labased_favoritos') || '[]');
+    if (!Array.isArray(savedFavorites)) throw new TypeError('El formato guardado debe ser una lista.');
+    savedFavorites.forEach((id) => {
+      if (typeof id === 'string' || typeof id === 'number') favoriteIds.add(String(id));
+    });
+  } catch (error) {
+    console.warn('No se pudieron cargar los favoritos guardados.', error);
+  }
+  function saveFavoriteIds() {
+    try {
+      localStorage.setItem('labased_favoritos', JSON.stringify([...favoriteIds]));
+    } catch (error) {
+      console.error('No se pudieron guardar los favoritos en este dispositivo.', error);
+    }
+  }
   const pageSize = 8;
   let activeCategory = 'Todos';
   let visibleCount = pageSize;
@@ -372,9 +390,14 @@
   function renderFilters() {
     const productCategories = [...new Set(products.map((p) => p.category).filter(Boolean))];
     const baseNames = CATEGORY_META.map((category) => category.name);
-    const names = ['Todos', ...baseNames, ...productCategories.filter((c) => !baseNames.includes(c))];
+    const categoryNames = [...new Set([...baseNames, ...productCategories])];
+    const filters = [
+      { label: 'Todos', value: 'Todos' },
+      { label: 'Favoritos', value: FAVORITES_FILTER },
+      ...categoryNames.map((name) => ({ label: name, value: name }))
+    ];
 
-    filterList.innerHTML = names.map((name) => `<button class="filter-chip" type="button" data-filter="${escapeHtml(name)}" aria-pressed="${name === activeCategory}">${escapeHtml(name)}</button>`).join('');
+    filterList.innerHTML = filters.map(({ label, value }) => `<button class="filter-chip" type="button" data-filter="${escapeHtml(value)}" aria-pressed="${value === activeCategory}">${escapeHtml(label)}</button>`).join('');
     filterList.querySelectorAll('[data-filter]').forEach((button) => button.addEventListener('click', () => setCategory(button.dataset.filter)));
   }
 
@@ -429,9 +452,12 @@
   function getFilteredProducts() {
     const term = normalize(searchInput.value);
     const matches = products.filter((product) => {
-      const matchesCategory = activeCategory === 'Todos' || product.category === activeCategory;
+      const matchesCategory = activeCategory === 'Todos'
+        || activeCategory === FAVORITES_FILTER
+        || product.category === activeCategory;
+      const matchesFavorite = activeCategory !== FAVORITES_FILTER || favoriteIds.has(String(product.id));
       const matchesSearch = !term || normalize(`${product.name} ${product.category} ${product.unit}`).includes(term);
-      return matchesCategory && matchesSearch;
+      return matchesCategory && matchesFavorite && matchesSearch;
     });
 
     // Ordenamiento orgánico y profesional:
@@ -447,17 +473,32 @@
     });
   }
 
+  function getAvailableSubstitutes(product) {
+    return products
+      .filter((candidate) => (
+        String(candidate.id) !== String(product.id)
+        && candidate.category === product.category
+        && !candidate.isOutOfStock
+      ))
+      .sort((a, b) => Number(Boolean(b.isBestseller)) - Number(Boolean(a.isBestseller)))
+      .slice(0, 3);
+  }
+
   function renderProducts() {
     const filtered = getFilteredProducts();
     const visible = filtered.slice(0, visibleCount);
     if (!visible.length) {
-      productGrid.innerHTML = '<div class="empty-results"><strong>No encontramos ese producto</strong>Prueba con otra palabra o categoría.</div>';
+      productGrid.innerHTML = activeCategory === FAVORITES_FILTER
+        ? `<div class="empty-results"><strong>${favoriteIds.size ? 'No hay favoritos que coincidan' : 'Aún no tienes favoritos'}</strong>${favoriteIds.size ? 'Prueba otra búsqueda.' : 'Guarda productos con el corazón para encontrarlos aquí.'}</div>`
+        : '<div class="empty-results"><strong>No encontramos ese producto</strong>Prueba con otra palabra o categoría.</div>';
     } else {
       productGrid.innerHTML =       visible.map((product) => {
         const isSelected = selected.has(product.id);
+        const isFavorite = favoriteIds.has(String(product.id));
         const isOut = Boolean(product.isOutOfStock);
         const isBestseller = Boolean(product.isBestseller && !isOut);
         const isSpecial = Boolean(product.isSpecial && !isOut);
+        const substitutes = isOut ? getAvailableSubstitutes(product) : [];
         const pieceWeightHint = product.pieceWeightGrams > 0
           ? `<small>≈${formatCompactGrams(product.pieceWeightGrams)}</small>`
           : '';
@@ -469,6 +510,12 @@
               ? 'Por monto'
               : `Por ${product.unit || 'unidad'}`;
         const cardPrice = productPriceLabel(product).replace(/\s*\/\s*/g, '/');
+        const substituteMarkup = substitutes.length
+          ? `<div class="product-substitutes">
+              <span class="product-substitutes-label">Alternativas disponibles</span>
+              <div class="product-substitute-list">${substitutes.map((alternative) => `<button class="product-substitute" type="button" data-add="${escapeHtml(alternative.id)}" aria-label="Agregar ${escapeHtml(alternative.name)} a mi lista como alternativa">${escapeHtml(alternative.name)}</button>`).join('')}</div>
+            </div>`
+          : '';
 
         const cardClasses = ['product-card'];
         if (isOut) cardClasses.push('is-out-of-stock');
@@ -481,6 +528,7 @@
             <span class="product-tag">${isOut ? 'Agotado hoy' : escapeHtml(product.category)}</span>
             ${isBestseller ? '<span class="product-badge-bestseller">★ Más vendido</span>' : ''}
             ${isSpecial ? '<span class="product-badge-special">✦ Llegó hoy</span>' : ''}
+            <button class="favorite-toggle${isFavorite ? ' is-favorite' : ''}" type="button" data-favorite="${escapeHtml(product.id)}" aria-label="${isFavorite ? `Quitar ${escapeHtml(product.name)} de favoritos` : `Agregar ${escapeHtml(product.name)} a favoritos`}" aria-pressed="${isFavorite}" title="${isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}">${isFavorite ? '♥' : '♡'}</button>
             ${isOut 
               ? '<button class="add-product is-out-stock-btn" type="button" aria-disabled="true">Agotado</button>' 
               : `<button class="add-product${isSelected ? ' is-added' : ''}" type="button" data-add="${escapeHtml(product.id)}" aria-label="${isSelected ? 'Modificar' : 'Agregar'} ${escapeHtml(product.name)} ${isSelected ? 'en' : 'a'} mi lista" aria-pressed="${isSelected}">${isSelected ? '✓' : '+'}</button>`
@@ -495,10 +543,12 @@
               <strong class="product-price">${cardPrice}</strong>
             </div>
             ${isOut ? '<p class="product-availability"><span class="product-badge">Agotado</span>Surtido en camino</p>' : ''}
+            ${substituteMarkup}
           </div>
         </article>`;
       }).join('');
       productGrid.querySelectorAll('[data-add]').forEach((button) => button.addEventListener('click', () => toggleProduct(button.dataset.add)));
+      productGrid.querySelectorAll('[data-favorite]').forEach((button) => button.addEventListener('click', () => toggleFavorite(button.dataset.favorite)));
     }
     catalogCount.textContent = filtered.length ? `Mostrando ${visible.length} de ${filtered.length} productos` : '0 productos';
     showMoreButton.hidden = filtered.length <= visibleCount;
@@ -512,6 +562,18 @@
       return;
     }
     openPortionModal(product);
+  }
+
+  function toggleFavorite(id) {
+    const favoriteId = String(id);
+    if (favoriteIds.has(favoriteId)) favoriteIds.delete(favoriteId);
+    else favoriteIds.add(favoriteId);
+    saveFavoriteIds();
+    renderProducts();
+    const updatedButton = [...productGrid.querySelectorAll('[data-favorite]')]
+      .find((button) => button.dataset.favorite === favoriteId);
+    if (updatedButton) updatedButton.focus();
+    else filterList.querySelector(`[data-filter="${FAVORITES_FILTER}"]`).focus();
   }
 
   function removeProductFromList(id) {
