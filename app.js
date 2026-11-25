@@ -4,6 +4,7 @@
   // ==========================================================================
   const PHONE = '525543964883';
   const DEFAULT_MESSAGE = 'Hola, Recaudería La Base. Quiero consultar productos y hacer un pedido.';
+  const ORDER_GREETING = 'Hola, quiero hacer un pedido en Recaudería La Base:';
 
   // Enlace de Google Sheets (puede ser el enlace normal del navegador o el enlace publicado)
   const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1nw4bIXYRl5h0qIOIB5l5wG9okG_kH8DgG2DKTFCGR3o/edit?gid=1335044589#gid=1335044589';
@@ -1046,50 +1047,38 @@
     listOpenButton.hidden = totalCount === 0;
     sendList.setAttribute('aria-disabled', String(totalCount === 0));
 
-    // Formatear mensaje para WhatsApp (simple, directo y conversacional)
     const lines = [
-      'Hola, Recaudería La Base. Quiero hacer un pedido:\n',
-      '*Productos:*'
+      ORDER_GREETING,
+      '',
+      '*Productos*'
     ];
 
     chosen.forEach((p) => {
       const entry = selected.get(p.id);
       let portion = '';
-      if (entry?.mode === 'peso') portion = entry.value >= 1000 ? ` — ${entry.value / 1000} kg` : ` — ${entry.value} g`;
-      else if (entry?.mode === 'monto') portion = ` — $${formatMoney(entry.value)}`;
-      else if (entry?.mode === 'pieza') portion = ` — ${entry.value} ${Number(entry.value) === 1 ? 'pieza' : 'piezas'}`;
+      if (entry?.mode === 'peso') portion = formatGrams(entry.value);
+      else if (entry?.mode === 'monto') portion = `por $${formatMoney(entry.value)}`;
+      else if (entry?.mode === 'pieza') portion = `${entry.value} ${Number(entry.value) === 1 ? 'pieza' : 'piezas'}`;
       else if (entry) {
         const unit = p.saleType === 'pieza-peso'
           ? Number(entry.value) === 1 ? 'pieza' : 'piezas'
           : entry.unit || p.unit || 'unidad';
-        portion = ` — ${entry.value} ${unit}`;
+        portion = `${entry.value} ${unit}`;
       }
-      const weightEstimate = p.saleType === 'peso' && entry?.mode === 'monto' ? parseDecimal(entry.weightEstimate) : 0;
-      const pieceQuantity = entry?.mode === 'pieza'
-        || (p.saleType === 'pieza-peso' && entry?.mode === 'unidad')
-        ? parseDecimal(entry.value)
-        : 0;
-      const estimatedPieceWeight = parseDecimal(p.pieceWeightGrams) * pieceQuantity;
-      const hasPieceEstimate = estimatedPieceWeight > 0 && parseDecimal(p.price) > 0;
-      const pieceWeightPart = pieceQuantity > 0
-        ? estimatedPieceWeight > 0 ? ` (${formatGrams(estimatedPieceWeight)} aprox.)` : ' (peso aproximado pendiente)'
-        : '';
-      const pricePart = entry?.estimated > 0 || (pieceQuantity > 0 && hasPieceEstimate)
-        ? ` ($${formatMoney(entry.estimated)} MXN${pieceQuantity > 0 ? ' aprox.' : ''})`
-        : '';
-      const weightPart = weightEstimate ? ` (${formatGrams(weightEstimate)} aproximadamente)` : '';
-      const piecePriceDetails = p.saleType === 'pieza-peso'
-        ? ` (precio por kg: ${parseDecimal(p.price) > 0 ? `$${formatMoney(p.price)} MXN` : 'por confirmar'}; total final después de pesar)`
-        : '';
-      lines.push(`• ${p.name}${portion}${pieceWeightPart}${weightPart}${pricePart}${piecePriceDetails}`);
+      const estimate = parseDecimal(entry?.estimated);
+      const pricePart = entry?.mode === 'monto'
+        ? ''
+        : estimate > 0 ? ` · aprox. $${formatMoney(estimate)}` : ' · precio por confirmar';
+      lines.push(`• ${p.name}${portion ? ` — ${portion}` : ''}${pricePart}`);
     });
 
     if (estimatedTotal > 0) {
       lines.push('');
-      lines.push(`*Total estimado${itemsWithPrice < chosen.length ? ' parcial' : ''}:* $${formatMoney(estimatedTotal)} MXN`);
+      lines.push(`*Total estimado${itemsWithPrice < chosen.length ? ' parcial' : ''}:* $${formatMoney(estimatedTotal)}`);
     }
 
-    lines.push('\n¿Me confirman disponibilidad y total, por favor?');
+    lines.push('');
+    lines.push('¿Me confirman disponibilidad y total final? Gracias.');
 
     currentOrderMessage = totalCount > 0 ? lines.join('\n') : '';
   }
@@ -1151,14 +1140,14 @@
       : '🏪 Recoger en tienda';
     const paymentLabel = orderPaymentMethod.options[orderPaymentMethod.selectedIndex].textContent;
     const customerDetails = [
-      `*Folio de referencia:* ${reference}`,
+      `*Folio:* ${reference}`,
       customerName ? `*Nombre:* ${customerName}` : '',
-      `*Modalidad:* ${deliveryLabel}`,
-      `*Forma de pago:* ${paymentLabel}`
+      `*Entrega:* ${deliveryLabel}`,
+      `*Pago:* ${paymentLabel}`
     ].filter(Boolean).join('\n');
     const message = currentOrderMessage.replace(
-      'Hola, Recaudería La Base. Quiero hacer un pedido:\n',
-      `Hola, Recaudería La Base. Quiero hacer un pedido:\n${customerDetails}\n\n`
+      `${ORDER_GREETING}\n\n`,
+      `${ORDER_GREETING}\n\n${customerDetails}\n\n`
     );
     const whatsappWindow = window.open(waUrl(message), '_blank');
     if (whatsappWindow) {
