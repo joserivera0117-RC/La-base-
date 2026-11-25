@@ -457,7 +457,7 @@
         const isBestseller = Boolean(product.isBestseller && !isOut);
         const isSpecial = Boolean(product.isSpecial && !isOut);
         const pieceWeightHint = product.pieceWeightGrams > 0
-          ? `<small>≈${product.pieceWeightGrams >= 1000 ? `${formatQuantity(product.pieceWeightGrams / 1000)}kg` : `${formatQuantity(product.pieceWeightGrams)}g`}/pza</small>`
+          ? `<small>≈${formatCompactGrams(product.pieceWeightGrams)}</small>`
           : '';
         const saleUnit = product.saleType === 'peso'
           ? product.allowPieceOrder ? 'Kg/pza' : 'Por kg'
@@ -591,7 +591,7 @@
     const price = parseDecimal(product.price);
     if (product.saleType === 'pieza-peso') {
       const pieceWeightHint = product.pieceWeightGrams > 0
-        ? ` · ≈ ${formatGrams(product.pieceWeightGrams)}/pza`
+        ? ` · pieza ≈${formatCompactGrams(product.pieceWeightGrams)}`
         : '';
       return price ? `$${formatMoney(price)}/kg${pieceWeightHint}` : 'Precio por kg pendiente';
     }
@@ -601,7 +601,7 @@
       : `${product.unit || 'unidad'} · precio pendiente`;
     if (product.saleType === 'peso') {
       const pieceOptionHint = product.allowPieceOrder
-        ? ` · kg o pieza${product.pieceWeightGrams > 0 ? ` · ≈ ${formatGrams(product.pieceWeightGrams)}/pza` : ''}`
+        ? ` · pieza${product.pieceWeightGrams > 0 ? ` ≈${formatCompactGrams(product.pieceWeightGrams)}` : ''}`
         : '';
       return `$${formatMoney(price)}/kg${pieceOptionHint}`;
     }
@@ -740,6 +740,10 @@
     return grams >= 1000
       ? `${formatQuantity(grams / 1000)} kg`
       : `${formatQuantity(grams)} g`;
+  }
+
+  function formatCompactGrams(grams) {
+    return formatGrams(grams).replace(/\s/g, '');
   }
 
   function renderWeightFields() {
