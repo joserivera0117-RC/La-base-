@@ -111,6 +111,11 @@
   const drawerSummary = document.querySelector('#drawer-summary');
   const deliveryChips = document.querySelectorAll('.delivery-chip');
   const deliveryHintText = document.querySelector('#delivery-hint-text');
+  const orderCustomerBackdrop = document.querySelector('#order-customer-backdrop');
+  const orderCustomerWrapper = document.querySelector('#order-customer-wrapper');
+  const orderCustomerForm = document.querySelector('#order-customer-form');
+  const orderCustomerName = document.querySelector('#order-customer-name');
+  const orderReferenceValue = document.querySelector('#order-reference-value');
 
   const selected = new Map();
   try {
@@ -127,6 +132,7 @@
   let visibleCount = pageSize;
   let deliveryMode = 'recoger'; // 'recoger' | 'domicilio'
   let lastFocus = null;
+  let currentOrderMessage = '';
 
   // The hero card stack uses the supplied product photographs and pauses for hover, focus, or reduced motion.
   const swapStage = document.querySelector('#hero-swap');
@@ -1079,8 +1085,63 @@
 
     lines.push('\n¿Me confirman disponibilidad y total, por favor?');
 
-    sendList.href = totalCount > 0 ? waUrl(lines.join('\n')) : '#pedidos';
+    currentOrderMessage = totalCount > 0 ? lines.join('\n') : '';
   }
+
+  function createOrderReference() {
+    const now = new Date();
+    const date = [
+      String(now.getFullYear()).slice(-2),
+      String(now.getMonth() + 1).padStart(2, '0'),
+      String(now.getDate()).padStart(2, '0')
+    ].join('');
+    const number = Math.floor(100000 + Math.random() * 900000);
+    return `LB-${date}-${number}`;
+  }
+
+  function openOrderCustomerForm() {
+    if (!currentOrderMessage || selected.size === 0) return;
+    orderReferenceValue.textContent = createOrderReference();
+    orderCustomerName.value = '';
+    orderCustomerBackdrop.hidden = false;
+    orderCustomerWrapper.hidden = false;
+    requestAnimationFrame(() => orderCustomerName.focus());
+  }
+
+  function closeOrderCustomerForm() {
+    orderCustomerBackdrop.hidden = true;
+    orderCustomerWrapper.hidden = true;
+    if (!drawer.classList.contains('is-open')) document.body.classList.remove('no-scroll');
+    sendList.focus();
+  }
+
+  orderCustomerBackdrop.addEventListener('click', closeOrderCustomerForm);
+  document.querySelector('#order-customer-close').addEventListener('click', closeOrderCustomerForm);
+  document.querySelector('#order-customer-cancel').addEventListener('click', closeOrderCustomerForm);
+  orderCustomerForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (!currentOrderMessage || selected.size === 0) {
+      closeOrderCustomerForm();
+      return;
+    }
+
+    const reference = orderReferenceValue.textContent;
+    const customerName = orderCustomerName.value.trim().replace(/[\r\n]+/g, ' ').slice(0, 80);
+    const customerDetails = [
+      `*Folio de referencia:* ${reference}`,
+      customerName ? `*Nombre:* ${customerName}` : ''
+    ].filter(Boolean).join('\n');
+    const message = currentOrderMessage.replace(
+      'Hola, Recaudería La Base. Quiero hacer un pedido:\n',
+      `Hola, Recaudería La Base. Quiero hacer un pedido:\n${customerDetails}\n\n`
+    );
+    const whatsappWindow = window.open(waUrl(message), '_blank');
+    if (whatsappWindow) {
+      whatsappWindow.opener = null;
+      closeOrderCustomerForm();
+    }
+    else window.location.assign(waUrl(message));
+  });
 
   function openDrawer() {
     lastFocus = document.activeElement;
@@ -1254,14 +1315,19 @@
   document.querySelector('#drawer-close').addEventListener('click', closeDrawer);
   backdrop.addEventListener('click', closeDrawer);
 
-  sendList.addEventListener('click', (event) => { 
-    if (selected.size === 0) event.preventDefault(); 
-  });
+  sendList.addEventListener('click', openOrderCustomerForm);
 
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && !portionWrapper.hidden) closePortionModal();
-    if (event.key === 'Escape' && drawer.classList.contains('is-open')) closeDrawer();
-    if (event.key === 'Tab' && drawer.classList.contains('is-open')) {
+    if (event.key === 'Escape') {
+      if (!orderCustomerWrapper.hidden) closeOrderCustomerForm();
+      else if (!portionWrapper.hidden) closePortionModal();
+      else if (drawer.classList.contains('is-open')) closeDrawer();
+    }
+    if (event.key === 'Tab' && !orderCustomerWrapper.hidden) {
+      const focusable = [...orderCustomerWrapper.querySelectorAll('button:not([disabled]),input:not([disabled])')];
+      if (event.shiftKey && document.activeElement === focusable[0]) { event.preventDefault(); focusable.at(-1).focus(); }
+      else if (!event.shiftKey && document.activeElement === focusable.at(-1)) { event.preventDefault(); focusable[0].focus(); }
+    } else if (event.key === 'Tab' && drawer.classList.contains('is-open')) {
       const focusable = [...drawer.querySelectorAll('a[href]:not([aria-disabled="true"]),button:not([disabled])')];
       if (event.shiftKey && document.activeElement === focusable[0]) { event.preventDefault(); focusable.at(-1).focus(); }
       else if (!event.shiftKey && document.activeElement === focusable.at(-1)) { event.preventDefault(); focusable[0].focus(); }

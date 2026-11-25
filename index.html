@@ -177,9 +177,34 @@
       <p class="drawer-disclaimer">
         ✳ <strong>Aviso:</strong> Los precios y la disponibilidad pueden variar según el pesaje exacto y la temporada del día. Te confirmaremos el total definitivo por WhatsApp antes de preparar tu pedido.
       </p>
-      <a class="button button-dark drawer-send" id="send-list" data-wa href="#pedidos">Enviar lista por WhatsApp <span aria-hidden="true">↗</span></a>
+      <button class="button button-dark drawer-send" id="send-list" type="button">Enviar lista por WhatsApp <span aria-hidden="true">↗</span></button>
     </div>
   </aside>
+
+  <div class="order-customer-backdrop" id="order-customer-backdrop" hidden></div>
+  <div class="order-customer-wrapper" id="order-customer-wrapper" hidden>
+    <section class="order-customer-card" role="dialog" aria-modal="true" aria-labelledby="order-customer-title">
+      <div class="order-customer-head">
+        <p class="eyebrow"><span class="eyebrow-line"></span> Un último paso</p>
+        <button class="drawer-close" id="order-customer-close" type="button" aria-label="Cerrar formulario">×</button>
+      </div>
+      <h2 id="order-customer-title">¿A nombre de quién?</h2>
+      <p class="order-customer-intro">Agrega un nombre para que podamos identificar tu lista al escribirnos por WhatsApp.</p>
+      <div class="order-reference">
+        <span>Folio de referencia</span>
+        <strong id="order-reference-value"></strong>
+      </div>
+      <form id="order-customer-form">
+        <label for="order-customer-name">Nombre de la clienta o cliente <span>Opcional</span></label>
+        <input id="order-customer-name" name="customerName" type="text" maxlength="80" autocomplete="name" placeholder="Ej. Mariana López">
+        <p class="order-reference-note">Este folio solo ayuda a identificar la conversación; tu pedido queda confirmado cuando te respondamos.</p>
+        <div class="order-customer-actions">
+          <button class="order-customer-cancel" id="order-customer-cancel" type="button">Volver a mi lista</button>
+          <button class="button button-dark order-customer-submit" type="submit">Continuar a WhatsApp <span aria-hidden="true">↗</span></button>
+        </div>
+      </form>
+    </section>
+  </div>
 
   <!-- Modal de Porción / Cantidad Adaptable ("Arma tu pedido") -->
   <div class="modal-backdrop" id="portion-modal-backdrop" hidden></div>

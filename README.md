@@ -2,6 +2,8 @@
 
 Sitio web para presentar la recaudería, explorar productos y preparar una lista para consultar por WhatsApp. Permite editar las cantidades de los productos agregados y muestra las formas de pago aceptadas. Está hecho con HTML, CSS y JavaScript sin dependencias complejas.
 
+Al enviar una lista, el sitio pide opcionalmente el nombre de la clienta o cliente y genera un folio de referencia que incluye en el mensaje de WhatsApp. El folio se crea en el navegador y sirve para identificar la conversación; no es un número de pedido registrado en una base de datos. El pedido queda confirmado cuando la recaudería responde por WhatsApp.
+
 ## Abrir el sitio
 
 1. Abre esta carpeta en Visual Studio Code.
