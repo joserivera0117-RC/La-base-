@@ -161,15 +161,6 @@
     </div>
 
     <div class="drawer-footer-summary" id="drawer-summary">
-      <div class="delivery-picker">
-        <span class="delivery-picker-title">¿Cómo prefieres recibirlo?</span>
-        <div class="delivery-chip-group" role="radiogroup" aria-label="Modalidad de entrega">
-          <button type="button" class="delivery-chip is-selected" data-mode="recoger" aria-pressed="true">🏪 Recoger en local</button>
-          <button type="button" class="delivery-chip" data-mode="domicilio" aria-pressed="false">🛵 A domicilio</button>
-        </div>
-        <p class="delivery-hint-text" id="delivery-hint-text" hidden>🛵 Envío a domicilio sujeto a cobertura y distancia desde la recaudería en Naucalpan. Confirmamos costo por WhatsApp.</p>
-      </div>
-
       <div class="drawer-total-row">
         <span>Total estimado:</span>
         <strong id="drawer-total-amount">$0.00</strong>
@@ -189,7 +180,7 @@
         <button class="drawer-close" id="order-customer-close" type="button" aria-label="Cerrar formulario">×</button>
       </div>
       <h2 id="order-customer-title">¿A nombre de quién?</h2>
-      <p class="order-customer-intro">Agrega un nombre para que podamos identificar tu lista al escribirnos por WhatsApp.</p>
+      <p class="order-customer-intro">Agrega tu nombre y elige cómo recibir y pagar tu pedido.</p>
       <div class="order-reference">
         <span>Folio de referencia</span>
         <strong id="order-reference-value"></strong>
@@ -197,7 +188,19 @@
       <form id="order-customer-form">
         <label for="order-customer-name">Nombre de la clienta o cliente <span>Opcional</span></label>
         <input id="order-customer-name" name="customerName" type="text" maxlength="80" autocomplete="name" placeholder="Ej. Mariana López">
-        <p class="order-reference-note">Este folio solo ayuda a identificar la conversación; tu pedido queda confirmado cuando te respondamos.</p>
+        <label for="order-delivery-mode">¿Cómo prefieres recibirlo?</label>
+        <select id="order-delivery-mode" name="deliveryMode">
+          <option value="recoger">Recoger en tienda</option>
+          <option value="domicilio">Envío a domicilio</option>
+        </select>
+        <p class="delivery-hint-text" id="delivery-hint-text" hidden>Envío sujeto a cobertura y distancia. Confirmaremos el costo por WhatsApp.</p>
+        <label for="order-payment-method">Forma de pago preferida</label>
+        <select id="order-payment-method" name="paymentMethod">
+          <option value="efectivo">Efectivo</option>
+          <option value="transferencia">Transferencia</option>
+          <option value="tarjeta">Tarjeta al recoger en tienda</option>
+        </select>
+        <p class="order-reference-note">El folio solo identifica la conversación. La forma de pago es una preferencia; esta página no realiza cobros. Confirmaremos el pedido por WhatsApp.</p>
         <div class="order-customer-actions">
           <button class="order-customer-cancel" id="order-customer-cancel" type="button">Volver a mi lista</button>
           <button class="button button-dark order-customer-submit" type="submit">Continuar a WhatsApp <span aria-hidden="true">↗</span></button>

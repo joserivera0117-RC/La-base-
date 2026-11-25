@@ -109,7 +109,8 @@
   const sendList = document.querySelector('#send-list');
   const drawerTotalAmount = document.querySelector('#drawer-total-amount');
   const drawerSummary = document.querySelector('#drawer-summary');
-  const deliveryChips = document.querySelectorAll('.delivery-chip');
+  const orderDeliveryMode = document.querySelector('#order-delivery-mode');
+  const orderPaymentMethod = document.querySelector('#order-payment-method');
   const deliveryHintText = document.querySelector('#delivery-hint-text');
   const orderCustomerBackdrop = document.querySelector('#order-customer-backdrop');
   const orderCustomerWrapper = document.querySelector('#order-customer-wrapper');
@@ -1046,10 +1047,8 @@
     sendList.setAttribute('aria-disabled', String(totalCount === 0));
 
     // Formatear mensaje para WhatsApp (simple, directo y conversacional)
-    const isDelivery = deliveryMode === 'domicilio';
     const lines = [
       'Hola, Recaudería La Base. Quiero hacer un pedido:\n',
-      `*Modalidad:* ${isDelivery ? '🛵 Envío a domicilio' : '🏪 Recoger en tienda'}\n`,
       '*Productos:*'
     ];
 
@@ -1110,9 +1109,22 @@
     if (!currentOrderMessage || selected.size === 0) return;
     orderReferenceValue.textContent = createOrderReference();
     orderCustomerName.value = '';
+    syncOrderFormChoices();
     orderCustomerBackdrop.hidden = false;
     orderCustomerWrapper.hidden = false;
     requestAnimationFrame(() => orderCustomerName.focus());
+  }
+
+  function syncOrderFormChoices() {
+    deliveryMode = orderDeliveryMode.value;
+    const isDelivery = deliveryMode === 'domicilio';
+    const cardOption = orderPaymentMethod.querySelector('option[value="tarjeta"]');
+    deliveryHintText.hidden = !isDelivery;
+    cardOption.disabled = isDelivery;
+    cardOption.hidden = isDelivery;
+    if (isDelivery && orderPaymentMethod.value === 'tarjeta') {
+      orderPaymentMethod.value = 'efectivo';
+    }
   }
 
   function closeOrderCustomerForm() {
@@ -1134,9 +1146,15 @@
 
     const reference = orderReferenceValue.textContent;
     const customerName = orderCustomerName.value.trim().replace(/[\r\n]+/g, ' ').slice(0, 80);
+    const deliveryLabel = deliveryMode === 'domicilio'
+      ? '🛵 Envío a domicilio (costo por confirmar)'
+      : '🏪 Recoger en tienda';
+    const paymentLabel = orderPaymentMethod.options[orderPaymentMethod.selectedIndex].textContent;
     const customerDetails = [
       `*Folio de referencia:* ${reference}`,
-      customerName ? `*Nombre:* ${customerName}` : ''
+      customerName ? `*Nombre:* ${customerName}` : '',
+      `*Modalidad:* ${deliveryLabel}`,
+      `*Forma de pago:* ${paymentLabel}`
     ].filter(Boolean).join('\n');
     const message = currentOrderMessage.replace(
       'Hola, Recaudería La Base. Quiero hacer un pedido:\n',
@@ -1167,18 +1185,9 @@
     if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
   }
 
-  // Eventos de selección de entrega (Recoger vs Domicilio)
-  deliveryChips.forEach((chip) => {
-    chip.addEventListener('click', () => {
-      deliveryMode = chip.dataset.mode;
-      deliveryChips.forEach((c) => {
-        const active = c.dataset.mode === deliveryMode;
-        c.classList.toggle('is-selected', active);
-        c.setAttribute('aria-pressed', String(active));
-      });
-      if (deliveryHintText) deliveryHintText.hidden = deliveryMode !== 'domicilio';
-      renderDrawerItems();
-    });
+  orderDeliveryMode.addEventListener('change', () => {
+    syncOrderFormChoices();
+    renderDrawerItems();
   });
 
   function hideSearchSuggestions() {
@@ -1331,7 +1340,7 @@
       else if (drawer.classList.contains('is-open')) closeDrawer();
     }
     if (event.key === 'Tab' && !orderCustomerWrapper.hidden) {
-      const focusable = [...orderCustomerWrapper.querySelectorAll('button:not([disabled]),input:not([disabled])')];
+      const focusable = [...orderCustomerWrapper.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled])')];
       if (event.shiftKey && document.activeElement === focusable[0]) { event.preventDefault(); focusable.at(-1).focus(); }
       else if (!event.shiftKey && document.activeElement === focusable.at(-1)) { event.preventDefault(); focusable[0].focus(); }
     } else if (event.key === 'Tab' && drawer.classList.contains('is-open')) {

@@ -1,8 +1,8 @@
 # Recaudería La Base
 
-Sitio web para presentar la recaudería, explorar productos y preparar una lista para consultar por WhatsApp. Permite editar las cantidades de los productos agregados y muestra las formas de pago aceptadas. Está hecho con HTML, CSS y JavaScript sin dependencias complejas.
+Sitio web para presentar la recaudería, explorar productos y preparar una lista para consultar por WhatsApp. Permite editar cantidades y elegir modalidad de entrega y forma de pago preferida; no procesa pagos en línea. Está hecho con HTML, CSS y JavaScript sin dependencias complejas.
 
-Al enviar una lista, el sitio pide opcionalmente el nombre de la clienta o cliente y genera un folio de referencia que incluye en el mensaje de WhatsApp. El folio se crea en el navegador y sirve para identificar la conversación; no es un número de pedido registrado en una base de datos. El pedido queda confirmado cuando la recaudería responde por WhatsApp.
+Al enviar una lista, el sitio pide opcionalmente el nombre de la clienta o cliente, la modalidad (recoger o envío) y la forma de pago preferida. Para recoger están disponibles efectivo, transferencia y tarjeta; para envío, efectivo y transferencia. Las preferencias se agregan al mensaje prellenado de WhatsApp. WhatsApp requiere que la persona revise y pulse Enviar; el sitio no puede mandarlo automáticamente. El folio se crea en el navegador y sirve para identificar la conversación; no es un número de pedido registrado en una base de datos. El pedido queda confirmado cuando la recaudería responde por WhatsApp.
 
 ## Abrir el sitio
 
