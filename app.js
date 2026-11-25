@@ -74,11 +74,15 @@
       ? ['si', 'true', '1', 'yes', 'activo'].includes(normalize(p.allowPieceOrder))
       : defaultPieceOrder;
     const pieceWeightGrams = parseDecimal(p.pieceWeightGrams || p.approxPieceWeight);
+    const regularPrice = parseDecimal(p.price);
+    const offerPrice = parseDecimal(p.offerPrice);
     return {
       ...p,
       status,
       unit: p.unit || 'unidad',
       saleType,
+      offerPrice,
+      isOnSale: saleType !== 'monto' && regularPrice > 0 && offerPrice > 0 && offerPrice < regularPrice,
       allowPieceOrder,
       pieceWeightGrams: pieceWeightGrams > 0 ? pieceWeightGrams : 0,
       minimum: minimum > 0 ? minimum : undefined,
@@ -87,6 +91,10 @@
       isSpecial: stNorm.includes('especial') || stNorm.includes('lleg') || stNorm.includes('pocas') || stNorm.includes('temporada'),
       isBestseller: p.isBestseller === true || p.isBestseller === 'SI' || BESTSELLERS.some((b) => nmNorm.includes(b))
     };
+  }
+
+  function getEffectivePrice(product) {
+    return product.isOnSale ? parseDecimal(product.offerPrice) : parseDecimal(product.price);
   }
 
   // Catálogo inicial enriquecido
@@ -264,7 +272,9 @@
     const nameIdx = findIndex('nombre', 'name', 'producto');
     const catIdx = findIndex('categoria', 'category');
     const unitIdx = findIndex('unidad', 'unit', 'medida');
-    const priceIdx = findIndex('precio', 'price', 'costo');
+    const regularPriceIdx = rawHeaders.findIndex((header) => ['precio', 'price', 'costo'].includes(header));
+    const priceIdx = regularPriceIdx !== -1 ? regularPriceIdx : findIndex('precio', 'price', 'costo');
+    const offerPriceIdx = findIndex('precio oferta', 'precio promocional', 'precio rebaja', 'offer price', 'sale price');
     const activeIdx = findIndex('activo', 'active', 'mostrar', 'visible');
     const statusIdx = findIndex('estado', 'status', 'disponibilidad');
     const imgIdx = findIndex('imagen', 'image', 'foto', 'url');
@@ -291,6 +301,7 @@
       const category = (catIdx !== -1 && r[catIdx]) ? r[catIdx] : 'Frutas';
       const unit = (unitIdx !== -1 && r[unitIdx]) ? r[unitIdx] : 'kg';
       const price = (priceIdx !== -1 && r[priceIdx]) ? String(parseDecimal(r[priceIdx])).replace(/\.0$/, '') : '';
+      const offerPrice = (offerPriceIdx !== -1 && r[offerPriceIdx]) ? String(parseDecimal(r[offerPriceIdx])).replace(/\.0$/, '') : '';
       const status = (statusIdx !== -1 && r[statusIdx]) ? r[statusIdx].trim() : 'Disponible';
       const image = (imgIdx !== -1 && r[imgIdx]) ? r[imgIdx].trim() : '';
       const isExplicitBestseller = destIdx !== -1 && (normalize(r[destIdx]) === 'si' || normalize(r[destIdx]) === 'true');
@@ -308,6 +319,7 @@
         category,
         unit,
         price,
+        offerPrice,
         status,
         image: formatImageUrl(image),
         saleType,
@@ -425,7 +437,7 @@
     specialsContainer.hidden = false;
     specialsRow.innerHTML = specialItems.map((product) => {
       const isSelected = selected.has(product.id);
-      const priceText = productPriceLabel(product);
+      const priceText = productPriceMarkup(product);
       return `<article class="special-card">
         <div class="special-card-img">
           <img src="${escapeHtml(formatImageUrl(product.image))}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="this.onerror=null;this.src='assets/images/logo-mascota.jpeg';">
@@ -509,7 +521,7 @@
             : product.saleType === 'monto'
               ? 'Por monto'
               : `Por ${product.unit || 'unidad'}`;
-        const cardPrice = productPriceLabel(product).replace(/\s*\/\s*/g, '/');
+        const cardPrice = productPriceMarkup(product).replace(/\s*\/\s*/g, '/');
         const substituteMarkup = substitutes.length
           ? `<div class="product-substitutes">
               <span class="product-substitutes-label">Alternativas disponibles</span>
@@ -525,9 +537,7 @@
         return `<article class="${cardClasses.join(' ')}" data-product-id="${escapeHtml(product.id)}">
           <div class="product-image">
             <img src="${escapeHtml(formatImageUrl(product.image))}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="this.onerror=null;this.src='assets/images/logo-mascota.jpeg';">
-            <span class="product-tag">${isOut ? 'Agotado hoy' : escapeHtml(product.category)}</span>
-            ${isBestseller ? '<span class="product-badge-bestseller">★ Más vendido</span>' : ''}
-            ${isSpecial ? '<span class="product-badge-special">✦ Llegó hoy</span>' : ''}
+            ${isOut ? '<span class="product-tag">Agotado hoy</span>' : ''}
             <button class="favorite-toggle${isFavorite ? ' is-favorite' : ''}" type="button" data-favorite="${escapeHtml(product.id)}" aria-label="${isFavorite ? `Quitar ${escapeHtml(product.name)} de favoritos` : `Agregar ${escapeHtml(product.name)} a favoritos`}" aria-pressed="${isFavorite}" title="${isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}">${isFavorite ? '♥' : '♡'}</button>
             ${isOut 
               ? '<button class="add-product is-out-stock-btn" type="button" aria-disabled="true">Agotado</button>' 
@@ -535,12 +545,17 @@
             }
           </div>
           <div class="product-info">
+            <div class="product-card-labels">
+              <span class="product-category-label">${escapeHtml(product.category || 'Producto')}</span>
+              ${isBestseller ? '<span class="product-badge-bestseller">★ Más vendido</span>' : ''}
+              ${isSpecial ? '<span class="product-badge-special">✦ Llegó hoy</span>' : ''}
+            </div>
             <div class="product-info-header">
               <h3>${escapeHtml(product.name)}</h3>
             </div>
             <div class="product-sale-line">
               <span class="product-sale-unit">${escapeHtml(saleUnit)}${pieceWeightHint}</span>
-              <strong class="product-price">${cardPrice}</strong>
+              <span class="product-price">${cardPrice}</span>
             </div>
             ${isOut ? '<p class="product-availability"><span class="product-badge">Agotado</span>Surtido en camino</p>' : ''}
             ${substituteMarkup}
@@ -652,12 +667,16 @@
   }
 
   function formatProductSubtitle(product) {
-    const price = parseDecimal(product.price);
+    const price = getEffectivePrice(product);
+    const regularPrice = parseDecimal(product.price);
+    const describePrice = (suffix = '') => product.isOnSale
+      ? `$${formatMoney(price)}${suffix} · antes $${formatMoney(regularPrice)}${suffix}`
+      : `$${formatMoney(price)}${suffix}`;
     if (product.saleType === 'pieza-peso') {
       const pieceWeightHint = product.pieceWeightGrams > 0
         ? ` · pieza ≈${formatCompactGrams(product.pieceWeightGrams)}`
         : '';
-      return price ? `$${formatMoney(price)}/kg${pieceWeightHint}` : 'Precio por kg pendiente';
+      return price ? `${describePrice('/kg')}${pieceWeightHint}` : 'Precio por kg pendiente';
     }
     if (product.saleType === 'monto') return `Desde $${formatMoney(product.minimum || 2)} · por monto`;
     if (!price) return product.saleType === 'peso' && product.allowPieceOrder
@@ -667,21 +686,36 @@
       const pieceOptionHint = product.allowPieceOrder
         ? ` · pieza${product.pieceWeightGrams > 0 ? ` ≈${formatCompactGrams(product.pieceWeightGrams)}` : ''}`
         : '';
-      return `$${formatMoney(price)}/kg${pieceOptionHint}`;
+      return `${describePrice('/kg')}${pieceOptionHint}`;
     }
-    return `$${formatMoney(price)} por ${product.unit || 'unidad'} · sujeto a disponibilidad`;
+    return `${describePrice()} por ${product.unit || 'unidad'} · sujeto a disponibilidad`;
+  }
+
+  function getProductPriceLabel(product, price, forcePerKg = false) {
+    if (product.saleType === 'pieza-peso') return price ? `$${formatMoney(price)} / kg` : 'Consultar precio por kg';
+    if (product.saleType === 'monto') return `Desde $${formatMoney(product.minimum || 2)}`;
+    if (!price) return 'Consultar precio';
+    if (forcePerKg || (product.saleType === 'peso' && product.allowPieceOrder)) return `$${formatMoney(price)} / kg`;
+    return `$${formatMoney(price)}`;
   }
 
   function productPriceLabel(product) {
-    if (product.saleType === 'pieza-peso') {
-      const price = parseDecimal(product.price);
-      return price ? `$${formatMoney(price)} / kg` : 'Consultar precio por kg';
-    }
-    if (product.saleType === 'monto') return `Desde $${formatMoney(product.minimum || 2)}`;
-    const price = parseDecimal(product.price);
-    if (!price) return 'Consultar precio';
-    if (product.saleType === 'peso' && product.allowPieceOrder) return `$${formatMoney(price)} / kg`;
-    return `$${formatMoney(price)}`;
+    return getProductPriceLabel(product, getEffectivePrice(product));
+  }
+
+  function productPriceMarkup(product, forcePerKg = false) {
+    const currentPrice = forcePerKg
+      ? getProductPriceLabel(product, getEffectivePrice(product), true)
+      : productPriceLabel(product);
+    if (!product.isOnSale) return escapeHtml(currentPrice);
+
+    const regularPrice = getProductPriceLabel(product, parseDecimal(product.price), forcePerKg);
+    const discountPercent = Math.max(1, Math.round((1 - getEffectivePrice(product) / parseDecimal(product.price)) * 100));
+    return `<span class="product-price-discount">
+      <s class="product-price-was">${escapeHtml(regularPrice)}</s>
+      <strong class="product-price-now">${escapeHtml(currentPrice)}</strong>
+      <span class="product-price-sale-tag">-${discountPercent}%</span>
+    </span>`;
   }
 
   function formatMoney(value) {
@@ -747,7 +781,7 @@
   function updatePortionSummary() {
     const product = activePortionProduct;
     if (!product) return;
-    const pricePerKg = ['peso', 'pieza-peso'].includes(product.saleType) ? parseDecimal(product.price) : 0;
+    const pricePerKg = ['peso', 'pieza-peso'].includes(product.saleType) ? getEffectivePrice(product) : 0;
     const value = Number(portionValue);
     const isApproxPieceMode = (product.saleType === 'peso' && portionMode === 'pieza')
       || (product.saleType === 'pieza-peso' && portionMode === 'unidad');
@@ -768,7 +802,7 @@
         : 0;
       label = `${value} ${value === 1 ? 'pieza' : 'piezas'}`;
     } else {
-      amount = parseDecimal(product.price) * value;
+      amount = getEffectivePrice(product) * value;
       label = `${value} ${product.unit || 'unidad'}${value === 1 ? '' : 's'}`;
     }
 
@@ -795,9 +829,24 @@
   }
 
   function estimateGramsForAmount(product, amount) {
-    const pricePerKg = product.saleType === 'peso' ? parseDecimal(product.price) : 0;
+    const pricePerKg = product.saleType === 'peso' ? getEffectivePrice(product) : 0;
     if (pricePerKg <= 0 || amount <= 0) return 0;
     return Math.round((amount / pricePerKg) * 1000);
+  }
+
+  function estimateProductSelection(product, entry) {
+    const quantity = parseDecimal(entry.value);
+    const price = getEffectivePrice(product);
+    if (entry.mode === 'peso') return Math.round(price * (quantity / 1000));
+    if (entry.mode === 'monto') return Math.round(quantity);
+
+    if (entry.mode === 'pieza' || (entry.mode === 'unidad' && product.saleType === 'pieza-peso')) {
+      const pieceWeight = parseDecimal(product.pieceWeightGrams) * quantity;
+      return pieceWeight > 0 && price > 0 ? Math.round(price * (pieceWeight / 1000)) : 0;
+    }
+
+    if (entry.mode === 'unidad') return Math.round(price * quantity);
+    return 0;
   }
 
   function formatGrams(grams) {
@@ -950,20 +999,7 @@
     }
     if (!valid) return;
 
-    const pricePerUnit = parseDecimal(activePortionProduct.price);
-    let estimated = 0;
-    if (portionMode === 'peso') estimated = Math.round(pricePerUnit * (portionValue / 1000));
-    if (portionMode === 'monto') estimated = Math.round(portionValue);
-    if (portionMode === 'pieza' && activePortionProduct.pieceWeightGrams > 0) {
-      estimated = Math.round(pricePerUnit * (activePortionProduct.pieceWeightGrams * portionValue / 1000));
-    }
-    if (portionMode === 'unidad') {
-      estimated = activePortionProduct.saleType === 'pieza-peso'
-        ? activePortionProduct.pieceWeightGrams > 0
-          ? Math.round(pricePerUnit * (activePortionProduct.pieceWeightGrams * portionValue / 1000))
-          : 0
-        : Math.round(pricePerUnit * portionValue);
-    }
+    const estimated = estimateProductSelection(activePortionProduct, { mode: portionMode, value: portionValue });
 
     const weightEstimate = portionMode === 'monto' && activePortionProduct.saleType === 'peso'
       ? estimateGramsForAmount(activePortionProduct, portionValue)
@@ -994,7 +1030,7 @@
     let migratedSelection = false;
 
     drawerItems.innerHTML = chosen.map((product) => {
-      let entry = selected.get(product.id) || { mode: 'unidad', value: 1, unit: product.unit || 'unidad', estimated: parseDecimal(product.price) };
+      let entry = selected.get(product.id) || { mode: 'unidad', value: 1, unit: product.unit || 'unidad', estimated: getEffectivePrice(product) };
       if (product.saleType === 'pieza-peso') {
         const quantity = parseDecimal(entry.value);
         const validPieceEntry = entry.mode === 'unidad'
@@ -1023,22 +1059,31 @@
           : entry.unit || product.unit || 'unidad';
         portionText = `${entry.value} ${escapeHtml(unit)}`;
       }
-      const weightEstimate = product.saleType === 'peso' && entry.mode === 'monto' ? parseDecimal(entry.weightEstimate) : 0;
       const pieceQuantity = entry.mode === 'pieza'
         || (product.saleType === 'pieza-peso' && entry.mode === 'unidad')
         ? parseDecimal(entry.value)
         : 0;
       const estimatedPieceWeight = parseDecimal(product.pieceWeightGrams) * pieceQuantity;
       const isApproxPieceEntry = pieceQuantity > 0;
-      const hasPieceEstimate = estimatedPieceWeight > 0 && parseDecimal(product.price) > 0;
-      const pieceEstimateAmount = hasPieceEstimate
-        ? Math.round(parseDecimal(product.price) * (estimatedPieceWeight / 1000))
-        : 0;
-      if (isApproxPieceEntry && parseDecimal(entry.estimated) !== pieceEstimateAmount) {
-        entry = { ...entry, estimated: pieceEstimateAmount };
+      const currentPrice = getEffectivePrice(product);
+      const canRecalculateEstimate = currentPrice > 0 || entry.mode === 'monto';
+      const recalculatedEstimate = canRecalculateEstimate
+        ? estimateProductSelection(product, entry)
+        : isApproxPieceEntry ? 0 : parseDecimal(entry.estimated);
+      const recalculatedWeightEstimate = product.saleType === 'peso'
+        && entry.mode === 'monto'
+        && currentPrice > 0
+        ? estimateGramsForAmount(product, entry.value)
+        : parseDecimal(entry.weightEstimate);
+      if (parseDecimal(entry.estimated) !== recalculatedEstimate
+        || parseDecimal(entry.weightEstimate) !== recalculatedWeightEstimate) {
+        entry = { ...entry, estimated: recalculatedEstimate, weightEstimate: recalculatedWeightEstimate };
         selected.set(product.id, entry);
         migratedSelection = true;
       }
+      const weightEstimate = product.saleType === 'peso' && entry.mode === 'monto' ? recalculatedWeightEstimate : 0;
+      const hasPieceEstimate = estimatedPieceWeight > 0 && getEffectivePrice(product) > 0;
+      const pieceEstimateAmount = isApproxPieceEntry ? recalculatedEstimate : 0;
       let weightInfoText = '';
       if (product.saleType === 'peso' && entry.mode === 'peso') {
         weightInfoText = formatGrams(entry.value);
@@ -1050,9 +1095,13 @@
       const priceText = isApproxPieceEntry
         ? hasPieceEstimate ? `$${formatMoney(pieceEstimateAmount)} aprox.` : 'Por confirmar'
         : entry.estimated > 0 ? `$${formatMoney(entry.estimated)}` : 'Por confirmar';
-      const pricePerKg = parseDecimal(product.price);
-      const pricePerKgText = product.saleType === 'pieza-peso' || entry.mode === 'pieza'
-        ? pricePerKg > 0 ? `$${formatMoney(pricePerKg)} / kg` : 'Precio por kg por confirmar'
+      const pricePerKg = getEffectivePrice(product);
+      const hasPerKgPrice = ['peso', 'pieza-peso'].includes(product.saleType);
+      const showUnitPrice = product.saleType === 'pieza-peso' || entry.mode === 'pieza' || product.isOnSale;
+      const pricePerKgText = showUnitPrice
+        ? pricePerKg > 0
+          ? `${productPriceMarkup(product, hasPerKgPrice)}${hasPerKgPrice ? '' : ` por ${escapeHtml(product.unit || 'unidad')}`}`
+          : 'Precio por kg por confirmar'
         : '';
       return `<li class="drawer-item-card">
         <div class="drawer-item-img"><img src="${escapeHtml(formatImageUrl(product.image))}" alt="" onerror="this.onerror=null;this.src='assets/images/logo-mascota.jpeg';"></div>
@@ -1090,7 +1139,7 @@
     let itemsWithPrice = 0;
     chosen.forEach((p) => {
       const entry = selected.get(p.id);
-      const num = entry ? parseDecimal(entry.estimated) : parseDecimal(p.price);
+      const num = entry ? parseDecimal(entry.estimated) : getEffectivePrice(p);
       if (num > 0) { estimatedTotal += Math.round(num); itemsWithPrice++; }
     });
 

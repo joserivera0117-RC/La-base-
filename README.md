@@ -43,7 +43,8 @@ Usa estos encabezados. La plantilla pone `Nombre`, `Precio` y los datos de pieza
 |---|---|
 | `ID` | Identificador único y permanente, por ejemplo `PROD-068`. No lo repitas ni lo cambies después: la lista del cliente se guarda usando este valor. |
 | `Nombre` | Texto requerido que verá el cliente. Los cinco nombres de hierbas configurados son `Cilantro`, `Perejil`, `Hierbabuena`, `Epazote` y `Manzanilla`; el código los fuerza a venta por `Monto`. |
-| `Precio` | Número sin texto. `Peso` y `Pieza por kg`: precio por kilogramo; `Unidad`: precio por una unidad de la etiqueta, por ejemplo una pieza o bolsa. `Monto`: déjalo vacío; la tarjeta muestra el mínimo. Para `Pieza por kg`, el total exacto no se calcula hasta conocer el peso real. |
+| `Precio` | Precio regular, como número sin texto. `Peso` y `Pieza por kg`: precio por kilogramo; `Unidad`: precio por una unidad de la etiqueta, por ejemplo una pieza o bolsa. `Monto`: déjalo vacío; la tarjeta muestra el mínimo. Para `Pieza por kg`, el total exacto no se calcula hasta conocer el peso real. Conserva aquí el precio regular durante una oferta. |
+| `Precio oferta` | Opcional, como número sin texto y en la misma unidad que `Precio`. Déjalo vacío si no hay oferta. Solo se activa cuando es mayor que cero y menor que `Precio`; se muestra el precio regular tachado, el precio de oferta y el porcentaje de descuento. El precio de oferta también se usa para los cálculos estimados. |
 | `Peso aprox. por pieza (g)` | Peso orientativo en gramos de una pieza individual, por ejemplo `350`. No inventes el dato si varía demasiado. Si queda vacío, la opción por pieza sigue disponible cuando esté habilitada, pero el peso y el precio aproximados aparecerán como pendientes. También permite mostrar una referencia para productos `Pieza por kg`; el peso y total definitivos se confirman al pesarlos. |
 | `Permitir compra por pieza` | Para productos cuyo `Tipo Venta` sea `Peso`, usa `SI` para ofrecer tanto peso como piezas, o `NO` para dejar solo peso. No cambia el precio por kilo ni elimina la opción `Monto`. En productos de tipo `Unidad`, `Monto` o `Pieza por kg`, no hace falta este ajuste. |
 | `Tipo Venta` | Preferentemente escribe `Peso`, `Unidad`, `Monto` o `Pieza por kg`. Esta última permite pedir piezas enteras cuyo importe final depende del peso real: se muestra el precio por kilo y el total queda pendiente hasta pesarlas. El mínimo y el incremento de piezas son 1. Se aceptan también `kilogramo` como `Peso`, `dinero`/`pesos` como `Monto`, y `pieza`/`bolsa`/`paquete` como `Unidad`. En blanco, se infiere `Peso` para `kg`/`gramo(s)`, `Monto` para la unidad `monto` y `Unidad` para las demás. |
@@ -58,7 +59,7 @@ Usa estos encabezados. La plantilla pone `Nombre`, `Precio` y los datos de pieza
 
 La plantilla actual contiene 70 productos. Los productos con `Peso` y `Permitir compra por pieza = SI` ofrecen las tres opciones: peso, pieza y monto; las hierbas por monto conservan su forma actual de compra. La pieza muestra un peso y un precio aproximados solo cuando `Peso aprox. por pieza (g)` tiene un valor; el total final se confirma después de pesarlo. Papaya, Aguacate y los piloncillos usan `Pieza por kg` y conservan la compra por pieza entera.
 
-El sitio consulta Google Sheets en línea; editar este CSV no cambia la hoja publicada. Para usar estos campos, copia también los encabezados `Peso aprox. por pieza (g)` y `Permitir compra por pieza` a la hoja publicada. Puedes reordenar las columnas, pero conserva sus encabezados y los `ID`; evita pegar sobre precios u otros datos que quieras conservar.
+El sitio consulta Google Sheets en línea; editar este CSV no cambia la hoja publicada. Para usar estos campos, copia también los encabezados `Precio oferta`, `Peso aprox. por pieza (g)` y `Permitir compra por pieza` a la hoja publicada. Puedes reordenar las columnas, pero conserva sus encabezados y los `ID`; evita pegar sobre precios u otros datos que quieras conservar.
 
 Los precios de `Precio` se leen como pesos reales, sin multiplicarlos por 100 ni modificarlos en la hoja. Los importes calculados se redondean por producto al peso más cercano (50 centavos suben al siguiente peso) y el total de la lista suma esos importes redondeados. Las cantidades de gramos conservan su precisión.
 
@@ -71,7 +72,7 @@ Usa `productos_la_base_actualizado.csv`, no el archivo CSV anterior: la página 
 
 - `index.html`: secciones, textos y datos de contacto.
 - `styles.css`: paleta de colores, tipografías y diseño adaptable.
-- `app.js`: sincronización con Google Sheets, filtros, búsqueda, lista de productos y WhatsApp.
+- `app.js`: sincronización con Google Sheets, filtros, búsqueda, precios de oferta, lista de productos y WhatsApp.
 - `productos_la_base_actualizado.csv`: plantilla local con la configuración de venta por pieza al precio por kilo.
 - `products.js`: catálogo de respaldo local (se usa si no hay internet o si aún no configuras Google Sheets).
 - `assets/images/`: imágenes de productos y categorías.
