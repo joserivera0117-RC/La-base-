@@ -174,6 +174,7 @@ body::after{content:"";position:fixed;z-index:80;inset:0;pointer-events:none;opa
 .product-info-header{margin-bottom:10px}
 .product-sale-line{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding-top:9px;border-top:1px solid #dfe5d4}
 .product-sale-unit{color:#5d705c;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.product-sale-unit small{display:block;margin-top:3px;color:#7a8775;font-size:9px;font-weight:500;letter-spacing:0;text-transform:none}
 .product-price{color:var(--green);font-size:15px;font-weight:800;letter-spacing:-.02em;white-space:nowrap}
 .product-availability{margin:5px 0 0!important;color:#788070!important;font-size:10px!important;line-height:1.4}
 .portion-weight-estimate{margin:-8px 0 0;padding:11px 14px;border:1px solid #d5dec8;border-radius:14px;background:#f4f6ed;color:#56624f;font-size:12px;line-height:1.5}
@@ -317,7 +318,9 @@ body::after{content:"";position:fixed;z-index:80;inset:0;pointer-events:none;opa
 .portion-modal-titles p{margin:0;font-size:11px;color:#717869}
 .portion-tab-toggle{display:grid;grid-template-columns:1fr 1fr;background:#e9eedd;padding:4px;border-radius:50px;gap:4px}
 .portion-tab-toggle[hidden]{display:none}
+.portion-tab-toggle.has-piece-option{grid-template-columns:repeat(3,minmax(0,1fr))}
 .portion-tab-btn{border:0;background:transparent;padding:10px 16px;border-radius:50px;font:700 11.5px var(--sans);color:#6b7264;cursor:pointer;transition:all .25s}
+.portion-tab-btn[hidden]{display:none}
 .portion-tab-btn.is-active{background:var(--green);color:#fff;box-shadow:0 3px 12px #01472e22}
 .portion-presets-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .portion-presets-grid.col-4{grid-template-columns:repeat(4,1fr)}
@@ -330,6 +333,9 @@ body::after{content:"";position:fixed;z-index:80;inset:0;pointer-events:none;opa
 .portion-stepper-btn{width:46px;height:46px;border-radius:50%;border:1px solid #c9d2be;background:#fff;font-size:24px;font-weight:700;color:var(--green);display:grid;place-items:center;cursor:pointer;transition:background .2s}
 .portion-stepper-btn:hover{background:var(--green);color:#fff}
 .portion-stepper-val{font:800 32px var(--sans);color:var(--green);min-width:60px;text-align:center}
+.portion-piece-guidance{display:flex;flex-direction:column;gap:4px;padding:13px 15px;border:1px solid #ebd08b;border-radius:16px;background:#fdf3d7}
+.portion-piece-guidance strong{font:700 12px var(--sans);color:var(--green)}
+.portion-piece-guidance small{font-size:11px;line-height:1.45;color:#6d7564}
 .portion-manual-group{display:flex;flex-direction:column;gap:8px;margin-top:4px}
 .portion-manual-label{font-size:9px;font-weight:800;letter-spacing:.14em;color:#6d7564;text-transform:uppercase}
 .portion-input-wrap{display:flex;align-items:center;background:#fff;border:1.5px solid #cfd7c2;border-radius:18px;padding:4px 16px;gap:8px}

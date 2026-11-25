@@ -195,10 +195,11 @@
         <p id="modal-product-subtitle">Precio · sujeto a disponibilidad</p>
       </div>
 
-      <!-- Segmented Tab Toggle (Solo visible en productos por peso kg/gramos) -->
+      <!-- Selector de forma de compra para productos vendidos por peso -->
       <div class="portion-tab-toggle" id="portion-tab-toggle" hidden>
-        <button type="button" class="portion-tab-btn is-active" data-tab="peso">Por peso</button>
-        <button type="button" class="portion-tab-btn" data-tab="monto">Por monto ($)</button>
+        <button type="button" class="portion-tab-btn is-active" data-tab="peso" aria-pressed="true">Por peso</button>
+        <button type="button" class="portion-tab-btn" data-tab="pieza" aria-pressed="false" hidden>Por pieza</button>
+        <button type="button" class="portion-tab-btn" data-tab="monto" aria-pressed="false">Por monto ($)</button>
       </div>
 
       <!-- Contenedor dinámico según la forma de venta (peso, monto o piezas/manojos) -->

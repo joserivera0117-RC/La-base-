@@ -42,6 +42,7 @@
     const stNorm = normalize(status);
     const nmNorm = normalize(p.name);
     const unitNorm = normalize(p.unit);
+    const categoryNorm = normalize(p.category);
     let saleType = normalize(p.saleType || p.tipoVenta);
     const herbNames = ['cilantro', 'perejil', 'hierba buena', 'hierbabuena', 'epazote', 'manzanilla'];
     const isHerbSoldByAmount = herbNames.some((name) => nmNorm.includes(name));
@@ -62,11 +63,22 @@
 
     const minimum = parseDecimal(p.minimum || p.cantidadMinima) || (isHerbSoldByAmount ? (nmNorm.includes('cilantro') || nmNorm.includes('manzanilla') ? 5 : 2) : 0);
     const increment = parseDecimal(p.increment || p.incremento) || (saleType === 'monto' ? 1 : 0);
+    const hasPieceOrderSetting = p.allowPieceOrder !== undefined && p.allowPieceOrder !== null && String(p.allowPieceOrder).trim() !== '';
+    const pieceOrderExclusions = ['ejote', 'chicharo', 'frijol', 'espinaca', 'verdolaga'];
+    const defaultPieceOrder = saleType === 'peso'
+      && ['frutas', 'verduras y legumbres', 'chiles'].includes(categoryNorm)
+      && !pieceOrderExclusions.some((name) => nmNorm.includes(name));
+    const allowPieceOrder = hasPieceOrderSetting
+      ? ['si', 'true', '1', 'yes', 'activo'].includes(normalize(p.allowPieceOrder))
+      : defaultPieceOrder;
+    const pieceWeightGrams = parseDecimal(p.pieceWeightGrams || p.approxPieceWeight);
     return {
       ...p,
       status,
       unit: p.unit || 'unidad',
       saleType,
+      allowPieceOrder,
+      pieceWeightGrams: pieceWeightGrams > 0 ? pieceWeightGrams : 0,
       minimum: minimum > 0 ? minimum : undefined,
       increment: increment > 0 ? increment : undefined,
       isOutOfStock: stNorm.includes('agotado') || stNorm.includes('sin existencia') || stNorm.includes('terminado'),
@@ -234,6 +246,8 @@
     const saleTypeIdx = findIndex('tipo venta', 'tipo de venta', 'venta por', 'presentacion');
     const minimumIdx = findIndex('cantidad minima', 'minimo', 'venta minima');
     const incrementIdx = findIndex('incremento', 'de cuanto en cuanto', 'pasos');
+    const pieceWeightIdx = findIndex('peso aprox. por pieza', 'peso aprox por pieza', 'peso aproximado por pieza', 'gramos aprox por pieza');
+    const allowPieceIdx = findIndex('permitir compra por pieza', 'habilitar compra por pieza', 'permitir por pieza');
 
     const result = [];
     for (let i = 1; i < lines.length; i++) {
@@ -257,6 +271,10 @@
       const saleType = saleTypeIdx !== -1 ? r[saleTypeIdx].trim() : '';
       const minimum = minimumIdx !== -1 ? r[minimumIdx].trim() : '';
       const increment = incrementIdx !== -1 ? r[incrementIdx].trim() : '';
+      const pieceWeightGrams = pieceWeightIdx !== -1 ? parseDecimal(r[pieceWeightIdx]) : 0;
+      const allowPieceOrder = allowPieceIdx !== -1 && r[allowPieceIdx]
+        ? ['si', 'true', '1', 'yes', 'activo'].includes(normalize(r[allowPieceIdx]))
+        : undefined;
 
       result.push(enrichProduct({
         id,
@@ -269,6 +287,8 @@
         saleType,
         minimum,
         increment,
+        pieceWeightGrams,
+        allowPieceOrder,
         isBestseller: isExplicitBestseller || BESTSELLERS.some((b) => normalize(name).includes(b))
       }));
     }
@@ -430,8 +450,11 @@
         const isOut = Boolean(product.isOutOfStock);
         const isBestseller = Boolean(product.isBestseller && !isOut);
         const isSpecial = Boolean(product.isSpecial && !isOut);
+        const pieceWeightHint = product.pieceWeightGrams > 0
+          ? `<small>≈ ${formatGrams(product.pieceWeightGrams)} por pieza</small>`
+          : '';
         const saleUnit = product.saleType === 'peso'
-          ? 'Por kilogramo'
+          ? product.allowPieceOrder ? 'Por peso o por pieza' : 'Por kilogramo'
           : product.saleType === 'pieza-peso'
             ? 'Por pieza · precio por kg'
             : product.saleType === 'monto'
@@ -458,7 +481,7 @@
               <h3>${escapeHtml(product.name)}</h3>
             </div>
             <div class="product-sale-line">
-              <span class="product-sale-unit">${escapeHtml(saleUnit)}</span>
+              <span class="product-sale-unit">${escapeHtml(saleUnit)}${pieceWeightHint}</span>
               <strong class="product-price">${productPriceLabel(product)}</strong>
             </div>
             <p class="product-availability">${isOut ? '<span class="product-badge">Agotado</span>Surtido en camino' : 'Sujeto a disponibilidad'}</p>
@@ -498,6 +521,7 @@
     activePortionProduct = product;
     portionConfirm.querySelector('span').textContent = selectedEntry ? 'GUARDAR CAMBIOS' : 'AGREGAR A MI LISTA';
     const tab = document.querySelector('#portion-tab-toggle');
+    const pieceTab = tab.querySelector('[data-tab="pieza"]');
     const title = document.querySelector('#modal-product-title');
     const subtitle = document.querySelector('#modal-product-subtitle');
     const body = document.querySelector('#modal-dynamic-body');
@@ -509,23 +533,31 @@
 
     if (saleType === 'peso') {
       tab.hidden = false;
-      portionMode = selectedEntry?.mode === 'monto' ? 'monto' : 'peso';
-      portionValue = selectedEntry ? parseDecimal(selectedEntry.value) : 250;
+      pieceTab.hidden = !product.allowPieceOrder;
+      tab.classList.toggle('has-piece-option', product.allowPieceOrder);
+      portionMode = selectedEntry?.mode === 'monto'
+        || (selectedEntry?.mode === 'pieza' && product.allowPieceOrder)
+        ? selectedEntry.mode
+        : 'peso';
+      portionValue = selectedEntry?.mode === portionMode
+        ? parseDecimal(selectedEntry.value)
+        : portionMode === 'pieza' ? 1 : portionMode === 'monto' ? getMinimumAmount(product) : 250;
       document.querySelectorAll('.portion-tab-btn').forEach((button) => {
         const isActive = button.dataset.tab === portionMode;
         button.classList.toggle('is-active', isActive);
         button.setAttribute('aria-pressed', String(isActive));
       });
-      if (portionMode === 'monto') renderMoneyFields(getMinimumAmount(product));
-      else renderWeightFields();
+      renderPortionModeFields();
     } else if (saleType === 'monto') {
       tab.hidden = true;
+      tab.classList.remove('has-piece-option');
       portionMode = 'monto';
       const minimum = getMinimumAmount(product);
       portionValue = selectedEntry ? Math.max(minimum, parseDecimal(selectedEntry.value)) : minimum;
       renderMoneyFields(minimum);
     } else {
       tab.hidden = true;
+      tab.classList.remove('has-piece-option');
       portionMode = 'unidad';
       const minimum = product.saleType === 'pieza-peso' ? 1 : product.minimum || 1;
       const increment = product.saleType === 'pieza-peso' ? 1 : product.increment || 1;
@@ -544,13 +576,21 @@
   function formatProductSubtitle(product) {
     const price = parseDecimal(product.price);
     if (product.saleType === 'pieza-peso') {
+      const pieceWeightHint = product.pieceWeightGrams > 0
+        ? ` · aprox. ${formatGrams(product.pieceWeightGrams)} por pieza`
+        : '';
       return price
-        ? `Pieza entera · $${formatMoney(price)} por kg · total al pesar`
-        : 'Pieza entera · precio por kg por confirmar';
+        ? `Pieza entera${pieceWeightHint} · $${formatMoney(price)} por kg · total final al pesar`
+        : `Pieza entera${pieceWeightHint} · precio por kg por confirmar`;
     }
     if (product.saleType === 'monto') return `Venta por monto · desde $${formatMoney(product.minimum || 2)} · sin peso estándar`;
     if (!price) return `${product.unit || 'unidad'} · Consulta disponibilidad`;
-    if (product.saleType === 'peso') return `${product.unit || 'kg'} · $${formatMoney(price)} por kg · sujeto a disponibilidad`;
+    if (product.saleType === 'peso') {
+      const pieceOptionHint = product.allowPieceOrder
+        ? ` · también por pieza${product.pieceWeightGrams > 0 ? ` (aprox. ${formatGrams(product.pieceWeightGrams)} c/u)` : ''}`
+        : '';
+      return `${product.unit || 'kg'} · $${formatMoney(price)} por kg${pieceOptionHint} · sujeto a disponibilidad`;
+    }
     return `$${formatMoney(price)} por ${product.unit || 'unidad'} · sujeto a disponibilidad`;
   }
 
@@ -562,6 +602,7 @@
     if (product.saleType === 'monto') return `Desde $${formatMoney(product.minimum || 2)}`;
     const price = parseDecimal(product.price);
     if (!price) return 'Consultar precio';
+    if (product.saleType === 'peso' && product.allowPieceOrder) return `$${formatMoney(price)} / kg`;
     return `$${formatMoney(price)}`;
   }
 
@@ -580,11 +621,65 @@
     return name.includes('cilantro') || name.includes('manzanilla') ? 5 : 2;
   }
 
+  function renderPortionModeFields() {
+    if (portionMode === 'peso') {
+      renderWeightFields();
+    } else if (portionMode === 'pieza') {
+      renderPieceFields();
+    } else {
+      renderMoneyFields(getMinimumAmount(activePortionProduct));
+    }
+  }
+
+  function renderPieceFields() {
+    const body = document.querySelector('#modal-dynamic-body');
+    const product = activePortionProduct;
+    const pieceWeight = parseDecimal(product.pieceWeightGrams);
+    portionValue = Math.max(1, Math.floor(parseDecimal(portionValue) || 1));
+    const pieceHint = pieceWeight
+      ? `Aproximadamente ${formatGrams(pieceWeight)} por pieza. El peso real puede variar.`
+      : 'Peso aproximado pendiente. Te confirmaremos el peso y el importe al preparar tu pedido.';
+    body.innerHTML = `
+      <div class="portion-piece-guidance">
+        <strong>Elige cuántas piezas quieres</strong>
+        <small>${pieceHint}</small>
+      </div>
+      <div class="portion-stepper-wrap">
+        <button type="button" class="portion-stepper-btn" id="portion-minus" aria-label="Disminuir piezas">−</button>
+        <strong class="portion-stepper-val" id="portion-piece-value">${portionValue}</strong>
+        <button type="button" class="portion-stepper-btn" id="portion-plus" aria-label="Aumentar piezas">+</button>
+      </div>
+      <div class="portion-manual-group">
+        <label class="portion-manual-label" for="portion-piece">Cantidad en piezas</label>
+        <div class="portion-input-wrap"><input id="portion-piece" type="number" inputmode="numeric" min="1" step="1" value="${portionValue}"><span>piezas</span></div>
+      </div>`;
+
+    const minus = body.querySelector('#portion-minus');
+    const plus = body.querySelector('#portion-plus');
+    const input = body.querySelector('#portion-piece');
+    const valueLabel = body.querySelector('#portion-piece-value');
+    const applyValue = (value) => {
+      const numeric = Math.max(1, Math.floor(parseDecimal(value) || 1));
+      portionValue = numeric;
+      input.value = String(numeric);
+      valueLabel.textContent = String(numeric);
+      updatePortionSummary();
+    };
+    minus.addEventListener('click', () => applyValue(portionValue - 1));
+    plus.addEventListener('click', () => applyValue(portionValue + 1));
+    input.addEventListener('input', () => applyValue(input.value));
+    updatePortionSummary();
+  }
+
   function updatePortionSummary() {
     const product = activePortionProduct;
     if (!product) return;
-    const pricePerKg = product.saleType === 'peso' ? parseDecimal(product.price) : 0;
+    const pricePerKg = ['peso', 'pieza-peso'].includes(product.saleType) ? parseDecimal(product.price) : 0;
     const value = Number(portionValue);
+    const isApproxPieceMode = (product.saleType === 'peso' && portionMode === 'pieza')
+      || (product.saleType === 'pieza-peso' && portionMode === 'unidad');
+    const pieceWeightGrams = isApproxPieceMode ? parseDecimal(product.pieceWeightGrams) : 0;
+    const approximateTotalWeight = pieceWeightGrams * value;
     let amount = 0;
     let label = '';
 
@@ -594,30 +689,40 @@
     } else if (portionMode === 'monto') {
       amount = value;
       label = `$${formatMoney(value)}`;
+    } else if (isApproxPieceMode) {
+      amount = pieceWeightGrams > 0 && pricePerKg > 0
+        ? pricePerKg * (approximateTotalWeight / 1000)
+        : 0;
+      label = `${value} ${value === 1 ? 'pieza' : 'piezas'}`;
     } else {
       amount = parseDecimal(product.price) * value;
       label = `${value} ${product.unit || 'unidad'}${value === 1 ? '' : 's'}`;
     }
 
-    const piecePriceNeedsWeighing = product.saleType === 'pieza-peso';
-    if (piecePriceNeedsWeighing) amount = 0;
-    document.querySelector('#portion-calc-label').textContent = piecePriceNeedsWeighing
-      ? 'Importe final'
+    const hasPieceEstimate = isApproxPieceMode && pieceWeightGrams > 0 && pricePerKg > 0;
+    document.querySelector('#portion-calc-label').textContent = isApproxPieceMode
+      ? 'Importe aproximado'
       : portionMode === 'peso' ? 'Importe estimado por peso' : 'Importe estimado';
-    document.querySelector('#portion-calc-value').textContent = piecePriceNeedsWeighing
-      ? 'Por confirmar al pesar'
+    document.querySelector('#portion-calc-value').textContent = isApproxPieceMode
+      ? hasPieceEstimate ? `$${formatMoney(amount)} MXN aprox.` : 'Por confirmar al pesar'
       : `$${formatMoney(amount)} MXN`;
     document.querySelector('#modal-product-subtitle').dataset.summary = label;
 
     const weightEstimate = document.querySelector('#portion-weight-estimate');
     const canEstimateWeight = portionMode === 'monto' && product.saleType === 'peso';
     const approximateGrams = canEstimateWeight ? estimateGramsForAmount(product, value) : 0;
-    weightEstimate.hidden = !canEstimateWeight;
-    weightEstimate.textContent = !canEstimateWeight
-      ? ''
-      : approximateGrams
+    weightEstimate.hidden = !canEstimateWeight && !isApproxPieceMode;
+    if (canEstimateWeight) {
+      weightEstimate.textContent = approximateGrams
         ? `Aproximadamente ${formatGrams(approximateGrams)} por este monto. Es un cálculo orientativo; el peso final puede variar.`
         : 'Agrega el precio por kg para mostrar una estimación de peso.';
+    } else if (isApproxPieceMode) {
+      weightEstimate.textContent = hasPieceEstimate
+        ? `Peso aproximado para ${value} ${value === 1 ? 'pieza' : 'piezas'}: ${formatGrams(approximateTotalWeight)}. El precio final se confirma después de pesarlas.`
+        : 'Peso aproximado pendiente. El total definitivo se confirma después de pesar las piezas.';
+    } else {
+      weightEstimate.textContent = '';
+    }
   }
 
   function estimateGramsForAmount(product, amount) {
@@ -667,15 +772,16 @@
   function renderMoneyFields(minimum) {
     const body = document.querySelector('#modal-dynamic-body');
     const increment = activePortionProduct.saleType === 'monto' ? activePortionProduct.increment || 1 : 1;
+    portionValue = Math.max(minimum, Math.round(parseDecimal(portionValue) || minimum));
     body.innerHTML = `
       <div class="portion-stepper-wrap">
         <button type="button" class="portion-stepper-btn" id="portion-minus" aria-label="Disminuir monto">−</button>
-        <strong class="portion-stepper-val" id="portion-money-value">$${formatMoney(minimum)}</strong>
+        <strong class="portion-stepper-val" id="portion-money-value">$${formatMoney(portionValue)}</strong>
         <button type="button" class="portion-stepper-btn" id="portion-plus" aria-label="Aumentar monto">+</button>
       </div>
       <div class="portion-manual-group">
         <label class="portion-manual-label" for="portion-money">También puedes escribir el monto</label>
-        <div class="portion-input-wrap"><span>$</span><input id="portion-money" type="number" inputmode="numeric" min="${minimum}" step="${increment}" value="${minimum}"><span>MXN</span></div>
+        <div class="portion-input-wrap"><span>$</span><input id="portion-money" type="number" inputmode="numeric" min="${minimum}" step="${increment}" value="${portionValue}"><span>MXN</span></div>
       </div>`;
 
     const minus = body.querySelector('#portion-minus');
@@ -739,19 +845,17 @@
 
   document.querySelectorAll('.portion-tab-btn').forEach((button) => {
     button.addEventListener('click', () => {
+      if (button.hidden || !activePortionProduct) return;
       portionMode = button.dataset.tab;
       document.querySelectorAll('.portion-tab-btn').forEach((item) => {
         const active = item === button;
         item.classList.toggle('is-active', active);
         item.setAttribute('aria-pressed', String(active));
       });
-      portionValue = portionMode === 'peso' ? 250 : 10;
-      renderWeightFields();
-      if (portionMode === 'monto') {
-        const minimum = getMinimumAmount(activePortionProduct);
-        portionValue = minimum;
-        renderMoneyFields(minimum);
-      }
+      portionValue = portionMode === 'peso'
+        ? 250
+        : portionMode === 'pieza' ? 1 : getMinimumAmount(activePortionProduct);
+      renderPortionModeFields();
     });
   });
 
@@ -763,6 +867,9 @@
     let valid = true;
     if (portionMode === 'peso') valid = portionValue >= (activePortionProduct.minimum || 50);
     if (portionMode === 'monto') valid = portionValue >= getMinimumAmount(activePortionProduct);
+    if (portionMode === 'pieza') {
+      valid = activePortionProduct.allowPieceOrder && portionValue >= 1 && Number.isInteger(portionValue);
+    }
     if (portionMode === 'unidad') {
       const minimum = activePortionProduct.saleType === 'pieza-peso' ? 1 : activePortionProduct.minimum || 1;
       valid = portionValue >= minimum;
@@ -774,8 +881,15 @@
     let estimated = 0;
     if (portionMode === 'peso') estimated = Math.round(pricePerUnit * (portionValue / 1000));
     if (portionMode === 'monto') estimated = Math.round(portionValue);
+    if (portionMode === 'pieza' && activePortionProduct.pieceWeightGrams > 0) {
+      estimated = Math.round(pricePerUnit * (activePortionProduct.pieceWeightGrams * portionValue / 1000));
+    }
     if (portionMode === 'unidad') {
-      estimated = activePortionProduct.saleType === 'pieza-peso' ? 0 : Math.round(pricePerUnit * portionValue);
+      estimated = activePortionProduct.saleType === 'pieza-peso'
+        ? activePortionProduct.pieceWeightGrams > 0
+          ? Math.round(pricePerUnit * (activePortionProduct.pieceWeightGrams * portionValue / 1000))
+          : 0
+        : Math.round(pricePerUnit * portionValue);
     }
 
     const weightEstimate = portionMode === 'monto' && activePortionProduct.saleType === 'peso'
@@ -784,7 +898,7 @@
     selected.set(activePortionProduct.id, {
       mode: portionMode,
       value: portionValue,
-      unit: activePortionProduct.unit || 'unidad',
+      unit: portionMode === 'pieza' ? 'pieza' : activePortionProduct.unit || 'unidad',
       estimated,
       weightEstimate
     });
@@ -814,7 +928,6 @@
           && Number.isInteger(quantity)
           && quantity >= 1
           && entry.unit === 'pieza'
-          && parseDecimal(entry.estimated) === 0
           && parseDecimal(entry.weightEstimate) === 0;
         if (!validPieceEntry) {
           entry = {
@@ -829,26 +942,43 @@
         }
       }
       let portionText = '';
-      if (entry.mode === 'unidad') {
+      if (entry.mode === 'pieza') {
+        portionText = `${entry.value} ${Number(entry.value) === 1 ? 'pieza' : 'piezas'}`;
+      } else if (entry.mode === 'unidad') {
         const unit = product.saleType === 'pieza-peso'
           ? Number(entry.value) === 1 ? 'pieza' : 'piezas'
           : entry.unit || product.unit || 'unidad';
         portionText = `${entry.value} ${escapeHtml(unit)}`;
       }
       const weightEstimate = product.saleType === 'peso' && entry.mode === 'monto' ? parseDecimal(entry.weightEstimate) : 0;
+      const pieceQuantity = entry.mode === 'pieza'
+        || (product.saleType === 'pieza-peso' && entry.mode === 'unidad')
+        ? parseDecimal(entry.value)
+        : 0;
+      const estimatedPieceWeight = parseDecimal(product.pieceWeightGrams) * pieceQuantity;
+      const isApproxPieceEntry = pieceQuantity > 0;
+      const hasPieceEstimate = estimatedPieceWeight > 0 && parseDecimal(product.price) > 0;
+      const pieceEstimateAmount = hasPieceEstimate
+        ? Math.round(parseDecimal(product.price) * (estimatedPieceWeight / 1000))
+        : 0;
+      if (isApproxPieceEntry && parseDecimal(entry.estimated) !== pieceEstimateAmount) {
+        entry = { ...entry, estimated: pieceEstimateAmount };
+        selected.set(product.id, entry);
+        migratedSelection = true;
+      }
       let weightInfoText = '';
       if (product.saleType === 'peso' && entry.mode === 'peso') {
         weightInfoText = formatGrams(entry.value);
       } else if (product.saleType === 'peso' && entry.mode === 'monto') {
         weightInfoText = weightEstimate ? `${formatGrams(weightEstimate)} aprox.` : 'Peso por confirmar';
-      } else if (product.saleType === 'pieza-peso') {
-        weightInfoText = 'Peso al pesar';
+      } else if (pieceQuantity > 0) {
+        weightInfoText = estimatedPieceWeight > 0 ? `${formatGrams(estimatedPieceWeight)} aprox.` : 'Peso pendiente';
       }
-      const priceText = product.saleType === 'pieza-peso'
-        ? 'Por confirmar'
+      const priceText = isApproxPieceEntry
+        ? hasPieceEstimate ? `$${formatMoney(pieceEstimateAmount)} aprox.` : 'Por confirmar'
         : entry.estimated > 0 ? `$${formatMoney(entry.estimated)}` : 'Por confirmar';
       const pricePerKg = parseDecimal(product.price);
-      const pricePerKgText = product.saleType === 'pieza-peso'
+      const pricePerKgText = product.saleType === 'pieza-peso' || entry.mode === 'pieza'
         ? pricePerKg > 0 ? `$${formatMoney(pricePerKg)} / kg` : 'Precio por kg por confirmar'
         : '';
       return `<li class="drawer-item-card">
@@ -919,6 +1049,7 @@
       let portion = '';
       if (entry?.mode === 'peso') portion = entry.value >= 1000 ? ` — ${entry.value / 1000} kg` : ` — ${entry.value} g`;
       else if (entry?.mode === 'monto') portion = ` — $${formatMoney(entry.value)}`;
+      else if (entry?.mode === 'pieza') portion = ` — ${entry.value} ${Number(entry.value) === 1 ? 'pieza' : 'piezas'}`;
       else if (entry) {
         const unit = p.saleType === 'pieza-peso'
           ? Number(entry.value) === 1 ? 'pieza' : 'piezas'
@@ -926,12 +1057,23 @@
         portion = ` — ${entry.value} ${unit}`;
       }
       const weightEstimate = p.saleType === 'peso' && entry?.mode === 'monto' ? parseDecimal(entry.weightEstimate) : 0;
-      const pricePart = entry?.estimated > 0 ? ` ($${formatMoney(entry.estimated)} MXN)` : '';
+      const pieceQuantity = entry?.mode === 'pieza'
+        || (p.saleType === 'pieza-peso' && entry?.mode === 'unidad')
+        ? parseDecimal(entry.value)
+        : 0;
+      const estimatedPieceWeight = parseDecimal(p.pieceWeightGrams) * pieceQuantity;
+      const hasPieceEstimate = estimatedPieceWeight > 0 && parseDecimal(p.price) > 0;
+      const pieceWeightPart = pieceQuantity > 0
+        ? estimatedPieceWeight > 0 ? ` (${formatGrams(estimatedPieceWeight)} aprox.)` : ' (peso aproximado pendiente)'
+        : '';
+      const pricePart = entry?.estimated > 0 || (pieceQuantity > 0 && hasPieceEstimate)
+        ? ` ($${formatMoney(entry.estimated)} MXN${pieceQuantity > 0 ? ' aprox.' : ''})`
+        : '';
       const weightPart = weightEstimate ? ` (${formatGrams(weightEstimate)} aproximadamente)` : '';
       const piecePriceDetails = p.saleType === 'pieza-peso'
         ? ` (precio por kg: ${parseDecimal(p.price) > 0 ? `$${formatMoney(p.price)} MXN` : 'por confirmar'}; total final después de pesar)`
         : '';
-      lines.push(`• ${p.name}${portion}${weightPart}${pricePart}${piecePriceDetails}`);
+      lines.push(`• ${p.name}${portion}${pieceWeightPart}${weightPart}${pricePart}${piecePriceDetails}`);
     });
 
     if (estimatedTotal > 0) {
