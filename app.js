@@ -63,7 +63,10 @@
       saleType = 'pieza-peso';
     }
 
-    const minimum = parseDecimal(p.minimum || p.cantidadMinima) || (isHerbSoldByAmount ? (nmNorm.includes('cilantro') || nmNorm.includes('manzanilla') ? 5 : 2) : 0);
+    const configuredMinimum = parseDecimal(p.minimum || p.cantidadMinima);
+    const minimum = isHerbSoldByAmount
+      ? nmNorm.includes('cilantro') ? 5 : 2
+      : configuredMinimum;
     const increment = parseDecimal(p.increment || p.incremento) || (saleType === 'monto' ? 1 : 0);
     const hasPieceOrderSetting = p.allowPieceOrder !== undefined && p.allowPieceOrder !== null && String(p.allowPieceOrder).trim() !== '';
     const pieceOrderExclusions = ['ejote', 'chicharo', 'frijol', 'espinaca', 'verdolaga'];
@@ -103,6 +106,8 @@
   const categoryGrid = document.querySelector('#category-grid');
   const filterList = document.querySelector('#filter-list');
   const productGrid = document.querySelector('#product-grid');
+  const offersContainer = document.querySelector('#offers-container');
+  const offersRow = document.querySelector('#offers-row');
   const searchInput = document.querySelector('#product-search');
   const heroSearchForm = document.querySelector('#hero-search-form');
   const heroSearchInput = document.querySelector('#hero-search');
@@ -375,6 +380,7 @@
           renderCategories();
           renderFilters();
           renderSpecialsShowcase();
+          renderOffersShowcase();
           renderProducts();
           renderDrawerItems();
           console.log(`Catálogo actualizado: ${products.length} productos sincronizados.`);
@@ -461,6 +467,43 @@
     });
   }
 
+  function renderOffersShowcase() {
+    if (!offersContainer || !offersRow) return;
+    const offerProducts = products.filter((product) => product.isOnSale && !product.isOutOfStock);
+    if (!offerProducts.length) {
+      offersContainer.hidden = true;
+      offersRow.innerHTML = '';
+      return;
+    }
+
+    offersContainer.hidden = false;
+    offersRow.innerHTML = offerProducts.map((product) => {
+      const isSelected = selected.has(product.id);
+      const discountPercent = Math.max(1, Math.round((1 - getEffectivePrice(product) / parseDecimal(product.price)) * 100));
+      const saleUnit = ['peso', 'pieza-peso'].includes(product.saleType)
+        ? 'Precio por kg'
+        : `Por ${product.unit || 'unidad'}`;
+      return `<article class="special-card offer-card">
+        <div class="special-card-img">
+          <img src="${escapeHtml(formatImageUrl(product.image))}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="this.onerror=null;this.src='assets/images/logo-mascota.jpeg';">
+          <span class="special-tag offer-tag">Rebaja · ${discountPercent}%</span>
+        </div>
+        <div class="special-card-info">
+          <h4>${escapeHtml(product.name)}</h4>
+          <p>${escapeHtml(product.category || 'Producto')} · ${escapeHtml(saleUnit)}</p>
+          <span class="special-card-price">${productPriceMarkup(product)}</span>
+          <button class="special-card-btn${isSelected ? ' is-added' : ''}" type="button" data-add="${escapeHtml(product.id)}" aria-label="${isSelected ? 'Modificar' : 'Agregar'} ${escapeHtml(product.name)} ${isSelected ? 'en' : 'a'} mi lista" aria-pressed="${isSelected}">
+            ${isSelected ? '✓ Modificar' : '+ Agregar'}
+          </button>
+        </div>
+      </article>`;
+    }).join('');
+
+    offersRow.querySelectorAll('[data-add]').forEach((button) => {
+      button.addEventListener('click', () => toggleProduct(button.dataset.add));
+    });
+  }
+
   function getFilteredProducts() {
     const term = normalize(searchInput.value);
     const matches = products.filter((product) => {
@@ -479,6 +522,10 @@
     return matches.sort((a, b) => {
       if (a.isOutOfStock && !b.isOutOfStock) return 1;
       if (!a.isOutOfStock && b.isOutOfStock) return -1;
+      const aOnSale = a.isOnSale && !a.isOutOfStock;
+      const bOnSale = b.isOnSale && !b.isOutOfStock;
+      if (aOnSale && !bOnSale) return -1;
+      if (!aOnSale && bOnSale) return 1;
       if (a.isBestseller && !b.isBestseller) return -1;
       if (!a.isBestseller && b.isBestseller) return 1;
       return 0;
@@ -597,6 +644,7 @@
     saveSelected();
     renderProducts();
     renderSpecialsShowcase();
+    renderOffersShowcase();
     renderDrawerItems();
   }
 
@@ -727,10 +775,13 @@
   }
 
   function getMinimumAmount(product) {
-    if (product.saleType !== 'monto') return parseDecimal(product.minimumAmount) || 10;
-    if (product.minimum) return product.minimum;
     const name = normalize(product.name);
-    return name.includes('cilantro') || name.includes('manzanilla') ? 5 : 2;
+    if (product.saleType === 'monto') {
+      if (name.includes('cilantro')) return 5;
+      if (['perejil', 'hierbabuena', 'hierba buena', 'epazote', 'manzanilla'].some((herb) => name.includes(herb))) return 2;
+      return Math.max(10, parseDecimal(product.minimum));
+    }
+    return Math.max(10, parseDecimal(product.minimumAmount));
   }
 
   function renderPortionModeFields() {
@@ -903,7 +954,9 @@
       </div>
       <div class="portion-manual-group">
         <label class="portion-manual-label" for="portion-money">También puedes escribir el monto</label>
-        <div class="portion-input-wrap"><span>$</span><input id="portion-money" type="number" inputmode="numeric" min="${minimum}" step="${increment}" value="${portionValue}"><span>MXN</span></div>
+        <div class="portion-input-wrap"><span>$</span><input id="portion-money" type="number" inputmode="numeric" min="${minimum}" step="${increment}" value="${portionValue}" aria-describedby="portion-money-minimum portion-money-error" aria-invalid="false"><span>MXN</span></div>
+        <small class="portion-minimum-hint" id="portion-money-minimum">Mínimo: $${formatMoney(minimum)} MXN</small>
+        <p class="portion-input-error" id="portion-money-error" role="alert" hidden>El monto mínimo para este producto es $${formatMoney(minimum)} MXN.</p>
       </div>`;
 
     const minus = body.querySelector('#portion-minus');
@@ -915,11 +968,23 @@
       portionValue = Math.max(minimum, Math.round(numeric));
       input.value = String(portionValue);
       valueLabel.textContent = `$${formatMoney(portionValue)}`;
+      input.setAttribute('aria-invalid', 'false');
+      input.closest('.portion-input-wrap').classList.remove('is-invalid');
+      body.querySelector('#portion-money-error').hidden = true;
       updatePortionSummary();
     };
     minus.addEventListener('click', () => applyValue(Math.max(minimum, portionValue - increment)));
     plus.addEventListener('click', () => applyValue(portionValue + increment));
-    input.addEventListener('input', () => applyValue(input.value));
+    input.addEventListener('input', () => {
+      const rawValue = input.value.trim();
+      portionValue = rawValue ? Math.round(parseDecimal(rawValue)) : 0;
+      valueLabel.textContent = rawValue ? `$${formatMoney(portionValue)}` : 'Escribe un monto';
+      const isValid = rawValue !== '' && portionValue >= minimum;
+      input.setAttribute('aria-invalid', String(!isValid));
+      input.closest('.portion-input-wrap').classList.toggle('is-invalid', !isValid);
+      body.querySelector('#portion-money-error').hidden = isValid;
+      updatePortionSummary();
+    });
     updatePortionSummary();
   }
 
@@ -997,7 +1062,19 @@
       valid = portionValue >= minimum;
       if (activePortionProduct.saleType === 'pieza-peso') valid = valid && Number.isInteger(portionValue);
     }
-    if (!valid) return;
+    if (!valid) {
+      if (portionMode === 'monto') {
+        const input = document.querySelector('#portion-money');
+        const error = document.querySelector('#portion-money-error');
+        if (input && error) {
+          error.hidden = false;
+          input.setAttribute('aria-invalid', 'true');
+          input.closest('.portion-input-wrap').classList.add('is-invalid');
+          input.focus();
+        }
+      }
+      return;
+    }
 
     const estimated = estimateProductSelection(activePortionProduct, { mode: portionMode, value: portionValue });
 
@@ -1015,6 +1092,7 @@
     closePortionModal();
     renderProducts();
     renderSpecialsShowcase();
+    renderOffersShowcase();
     renderDrawerItems();
   });
 
@@ -1479,6 +1557,7 @@
   renderCategories();
   renderFilters();
   renderSpecialsShowcase();
+  renderOffersShowcase();
   renderProducts();
   renderDrawerItems();
   observeReveals();

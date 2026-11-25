@@ -234,6 +234,16 @@ body::after{content:"";position:fixed;z-index:80;inset:0;pointer-events:none;opa
 .special-card-btn{border:0;border-radius:14px;padding:4px 10px;background:var(--green);color:#fff;font-size:9px;font-weight:700;cursor:pointer;transition:background .2s}
 .special-card-btn:hover{background:var(--tomato)}
 .special-card-btn.is-added{background:var(--tomato)}
+.offers-container{margin-bottom:28px;padding:20px 24px;border:1.5px solid #edc8bb;border-radius:26px;background:#fff3ec}
+.offers-container[hidden]{display:none}
+.offer-card{border-color:#e8c2b5}
+.offer-card .special-tag{background:var(--tomato);color:#fff}
+.offer-card .special-card-info{gap:7px}
+.offer-card .special-card-price{display:block}
+.offer-card .special-card-btn{width:100%;min-height:32px;margin-top:auto}
+.portion-minimum-hint{color:#7e8574;font-size:9px}
+.portion-input-error{margin:0;color:var(--tomato);font-size:10px;font-weight:700;line-height:1.35}
+.portion-input-wrap.is-invalid{border-color:var(--tomato);box-shadow:0 0 0 2px #b9452f1c}
 
 /* Sección de Encargos y Pedidos Especiales */
 .special-orders-section{background:var(--paper-deep);border-radius:4.5rem 4.5rem 0 0}
@@ -381,6 +391,7 @@ body::after{content:"";position:fixed;z-index:80;inset:0;pointer-events:none;opa
 .modal-btn-confirm{flex:1.7;min-height:48px;border-radius:50px;font-size:10.5px;letter-spacing:.14em;justify-content:center}
 
 @media(max-width:760px){
+  .offers-container{padding:14px 12px;border-radius:20px}
   .list-drawer{width:100%!important;padding:20px 16px!important}
   .drawer-head h2{font-size:28px!important}
   .drawer-body{padding-right:0!important}
