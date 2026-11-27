@@ -1,71 +1,91 @@
 ﻿ID,Nombre,Precio,Precio oferta,Peso aprox. por pieza (g),Permitir compra por pieza,Tipo Venta,Categoria,Unidad,Activo,Estado,Destacado,Cantidad Minima,Incremento,Imagen
-PROD-001,Aguacate,65,,,,Pieza por kg,Frutas,kg,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-001.Imagen.200648.jpg
-PROD-002,Guayaba,36,,,SI,Peso,Frutas,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-002.Imagen.200840.jpg
-PROD-003,Limón,36,,,SI,Peso,Frutas,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-003.Imagen.200952.png
-PROD-004,Mango Ataulfo,10,,,SI,Peso,Frutas,kg,NO,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-004.Imagen.201034.jpg
-PROD-005,Mango Manila,10,,,SI,Peso,Frutas,kg,NO,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-006.Imagen.201145.png
-PROD-006,Manzana Roja Grande,65,,,SI,Peso,Frutas,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-007.Imagen.001358.jpg
-PROD-007,Melón,40,,,,Unidad,Frutas,pieza,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-008.Imagen.202703.jpg
-PROD-008,Naranja,20,,,SI,Peso,Frutas,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-009.Imagen.203437.jpg
-PROD-009,Papaya,35,,,,Pieza por kg,Frutas,pieza,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-010.Imagen.203157.jpg
-PROD-010,Piña,46,,,,Unidad,Frutas,pieza,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-011.Imagen.204814.jpg
-PROD-011,Plátano,24,,,SI,Peso,Frutas,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-012.Imagen.204912.jpg
-PROD-012,Plátano Dominico,32,,,SI,Peso,Frutas,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-013.Imagen.204025.jpg
-PROD-013,Plátano Macho,36,,,SI,Peso,Frutas,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-014.Imagen.202950.jpg
-PROD-014,Toronja,35,,,SI,Peso,Frutas,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-015.Imagen.203405.jpg
+PROD-001,Aguacate,65,,170,Si,Pieza por kg,Frutas,kg,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-001.Imagen.200648.jpg
+PROD-002,Guayaba,36,,80,SI,Peso,Frutas,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-002.Imagen.200840.jpg
+PROD-003,Limón,36,,35,SI,Peso,Frutas,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-003.Imagen.200952.png
+PROD-004,Mango Ataulfo,10,,140,SI,Peso,Frutas,kg,NO,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-004.Imagen.201034.jpg
+PROD-005,Mango Manila,10,,180,SI,Peso,Frutas,kg,NO,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-006.Imagen.201145.png
+PROD-006,Manzana Roja Grande,65,,180,SI,Peso,Frutas,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-007.Imagen.001358.jpg
+PROD-007,Melón,40,,1200,,Unidad,Frutas,pieza,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-008.Imagen.202703.jpg
+PROD-008,Naranja,20,,150,SI,Peso,Frutas,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-009.Imagen.203437.jpg
+PROD-009,Papaya,35,,1500,,Pieza por kg,Frutas,pieza,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-010.Imagen.203157.jpg
+PROD-010,Piña,46,,1200,,Unidad,Frutas,pieza,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-011.Imagen.204814.jpg
+PROD-011,Plátano,26,24,130,SI,Peso,Frutas,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-012.Imagen.204912.jpg
+PROD-012,Plátano Dominico,32,,80,SI,Peso,Frutas,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-013.Imagen.204025.jpg
+PROD-013,Plátano Macho,36,,350,SI,Peso,Frutas,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-014.Imagen.202950.jpg
+PROD-014,Toronja,35,,320,SI,Peso,Frutas,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-015.Imagen.203405.jpg
 PROD-015,Chile de Árbol,200,,,NO,Peso,Chiles Secos,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-016.Imagen.211552.jpg
-PROD-016,Chile Chipotle,200,,,NO,Peso,Chiles Secos,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-017.Imagen.212711.png
-PROD-017,Chile Guajillo,200,,,NO,Peso,Chiles Secos,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-018.Imagen.211539.jpg
-PROD-018,Chile Habanero,100,,,SI,Peso,Chiles,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-019.Imagen.212602.jpg
-PROD-019,Chile Jalapeño,48,,,SI,Peso,Chiles,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-020.Imagen.211651.jpg
-PROD-020,Chile Manzano,120,,,SI,Peso,Chiles,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-021.Imagen.211525.jpg
-PROD-021,Chile Morita,200,,,NO,Peso,Chiles Secos,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-022.Imagen.212638.jpg
-PROD-022,Chile Morrón,60,,,SI,Peso,Chiles,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-023.Imagen.211610.jpg
-PROD-023,Chile Poblano,65,,,SI,Peso,Chiles,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-024.Imagen.212450.jpg
-PROD-024,Chile guajillo del que pica,200,,,NO,Peso,Chiles Secos,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-025.Imagen.211443.jpg
-PROD-025,Achiote,20,,,,Unidad,Semillas y abarrotes,pieza,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-026.Imagen.213548.jpg
-PROD-026,Ajo,140,,,NO,Peso,Semillas y abarrotes,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-027.Imagen.212954.jpg
-PROD-027,Ajonjolí,100,,,NO,Peso,Semillas y abarrotes,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-028.Imagen.214202.jpg
-PROD-028,Arroz,26,,,NO,Peso,Semillas y abarrotes,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-029.Imagen.214247.jpg
-PROD-029,Cacahuate,22,,,,Unidad,Semillas y abarrotes,bolsa,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-031.Imagen.214257.jpg
-PROD-030,Frijol Flor de Mayo,36,,,NO,Peso,Semillas y abarrotes,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-032.Imagen.214212.jpg
-PROD-031,Frijol Negro,38,,,NO,Peso,Semillas y abarrotes,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-033.Imagen.214223.jpg
-PROD-032,Granola,65,,,,Unidad,Semillas y abarrotes,paquete,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-034.Imagen.213521.jpg
-PROD-033,Hoja de tamal,45,,,,Unidad,Semillas y abarrotes,paquete,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-035.Imagen.214151.jpg
-PROD-034,Maíz palomero,40,,,NO,peso,Semillas y abarrotes,kg,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-036.Imagen.214319.jpg
-PROD-035,Pastas p/ chicharrón,80,,,NO,Peso,Semillas y abarrotes,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-037.Imagen.213204.jpg
-PROD-036,Sopa de Verdura,18,,,,Unidad,Verduras y Legumbres,bolsa,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-038.Imagen.213611.jpg
-PROD-037,Vainilla Chica,10,,,,Unidad,Semillas y abarrotes,pieza,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-039.Imagen.213626.jpg
-PROD-038,Vainilla Grande,10,,,,Unidad,Semillas y abarrotes,pieza,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-040.Imagen.213537.jpg
-PROD-039,Verdura Arrocera,22,,,,Unidad,Verduras y Legumbres,bolsa,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-041.Imagen.214310.jpg
-PROD-040,Betabel,38,,,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-042.Imagen.215604.jpg
-PROD-041,Brócoli,36,,,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-043.Imagen.214848.jpg
-PROD-042,Calabaza,28,,,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-044.Imagen.215040.jpg
-PROD-043,Cebolla,32,,,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-045.Imagen.180550.jpg
-PROD-044,Cebolla Morada,45,,,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-046.Imagen.180736.jpg
-PROD-045,Champiñón Entero,140,,,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-047.Imagen.214705.jpg
-PROD-046,Charla Champiñón,38,,,,Unidad,Verduras y Legumbres,charola,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-048.Imagen.214830.jpg
-PROD-047,Chayote,24,,,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-049.Imagen.215053.jpg
-PROD-048,Chícharo,80,,,NO,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-050.Imagen.214736.jpg
-PROD-049,Coliflor,45,,,,Unidad,Verduras y Legumbres,pieza,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-051.Imagen.215730.jpg
-PROD-050,Ejote,80,,,NO,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-052.Imagen.214759.jpg
-PROD-051,Espinaca,70,,,NO,Peso,Hierbas,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-053.Imagen.214716.jpg
-PROD-052,Jícama,26,,,SI,Peso,Frutas,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-054.Imagen.215106.jpg
-PROD-053,Jitomate,55,,,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-055.Imagen.190310.png
-PROD-054,Nopales,4,,,,Unidad,Verduras y Legumbres,pieza,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-056.Imagen.215551.jpg
-PROD-055,Papa,30,,,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-057.Imagen.214817.jpg
-PROD-056,Pepino,30,,,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-058.Imagen.214907.jpg
-PROD-057,Rábanos,2,,,,Unidad,Verduras y Legumbres,pieza,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-059.Imagen.215541.jpg
-PROD-058,Tomate,60,,,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-060.Imagen.215010.jpg
-PROD-059,Tomatillo,60,,,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-061.Imagen.215814.jpg
-PROD-060,Verdolaga,36,,,NO,Peso,Hierbas,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-062.Imagen.215740.jpg
-PROD-061,Zanahoria,26,,,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-063.Imagen.215510.jpg
-PROD-062,Chile serrano (verde),72,,,SI,Peso,Chiles,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/f6e0268d.Imagen.212306.jpg
+PROD-016,Chile Chipotle,200,,8,NO,Peso,Chiles Secos,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-017.Imagen.212711.png
+PROD-017,Chile Guajillo,200,,15,NO,Peso,Chiles Secos,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-018.Imagen.211539.jpg
+PROD-018,Chile Habanero,100,,12,SI,Peso,Chiles,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-019.Imagen.212602.jpg
+PROD-019,Chile Jalapeño,48,,20,SI,Peso,Chiles,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-020.Imagen.211651.jpg
+PROD-020,Chile Manzano,120,,75,SI,Peso,Chiles,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-021.Imagen.211525.jpg
+PROD-021,Chile Morita,200,,5,NO,Peso,Chiles Secos,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-022.Imagen.212638.jpg
+PROD-022,Chile Morrón,60,,180,SI,Peso,Chiles,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-023.Imagen.211610.jpg
+PROD-023,Chile Poblano,65,,65,SI,Peso,Chiles,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-024.Imagen.212450.jpg
+PROD-024,Chile guajillo del que pica,200,,15,NO,Peso,Chiles Secos,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-025.Imagen.211443.jpg
+PROD-025,Achiote,20,,100,,Unidad,Semillas y abarrotes,pieza,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-026.Imagen.213548.jpg
+PROD-026,Ajo,140,,60,NO,Peso,Semillas y abarrotes,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-027.Imagen.212954.jpg
+PROD-027,Ajonjolí,100,,100,NO,Peso,Semillas y abarrotes,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-028.Imagen.214202.jpg
+PROD-028,Arroz,26,,500,NO,Peso,Semillas y abarrotes,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-029.Imagen.214247.jpg
+PROD-029,Cacahuate,22,,100,,Unidad,Semillas y abarrotes,bolsa,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-031.Imagen.214257.jpg
+PROD-030,Frijol Flor de Mayo,36,,500,NO,Peso,Semillas y abarrotes,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-032.Imagen.214212.jpg
+PROD-031,Frijol Negro,38,,500,NO,Peso,Semillas y abarrotes,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-033.Imagen.214223.jpg
+PROD-032,Granola,65,,250,,Unidad,Semillas y abarrotes,paquete,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-034.Imagen.213521.jpg
+PROD-033,Hoja de tamal,45,,200,,Unidad,Semillas y abarrotes,paquete,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-035.Imagen.214151.jpg
+PROD-034,Maíz palomero,40,,500,NO,peso,Semillas y abarrotes,kg,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-036.Imagen.214319.jpg
+PROD-035,Pastas p/ chicharrón,80,,250,NO,Peso,Semillas y abarrotes,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-037.Imagen.213204.jpg
+PROD-036,Sopa de Verdura,18,,250,,Unidad,Verduras y Legumbres,bolsa,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-038.Imagen.213611.jpg
+PROD-037,Vainilla Chica,10,,25,,Unidad,Semillas y abarrotes,pieza,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-039.Imagen.213626.jpg
+PROD-038,Vainilla Grande,10,,50,,Unidad,Semillas y abarrotes,pieza,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-040.Imagen.213537.jpg
+PROD-039,Verdura Arrocera,22,,250,,Unidad,Verduras y Legumbres,bolsa,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-041.Imagen.214310.jpg
+PROD-040,Betabel,38,,200,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-042.Imagen.215604.jpg
+PROD-041,Brócoli,36,,600,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-043.Imagen.214848.jpg
+PROD-042,Calabaza,28,,200,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-044.Imagen.215040.jpg
+PROD-043,Cebolla,32,,180,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-045.Imagen.180550.jpg
+PROD-044,Cebolla Morada,45,,160,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-046.Imagen.180736.jpg
+PROD-045,Champiñón Entero,140,,20,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-047.Imagen.214705.jpg
+PROD-046,Charla Champiñón,38,,200,,Unidad,Verduras y Legumbres,charola,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-048.Imagen.214830.jpg
+PROD-047,Chayote,24,,250,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-049.Imagen.215053.jpg
+PROD-048,Chícharo,80,,150,NO,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-050.Imagen.214736.jpg
+PROD-049,Coliflor,45,,1100,,Unidad,Verduras y Legumbres,pieza,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-051.Imagen.215730.jpg
+PROD-050,Ejote,80,56,150,NO,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-052.Imagen.214759.jpg
+PROD-051,Espinaca,70,,150,NO,Peso,Hierbas,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-053.Imagen.214716.jpg
+PROD-052,Jícama,26,,1200,SI,Peso,Frutas,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-054.Imagen.215106.jpg
+PROD-053,Jitomate,60,55,150,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-055.Imagen.190310.png
+PROD-054,Nopales,4,,110,,Unidad,Verduras y Legumbres,pieza,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-056.Imagen.215551.jpg
+PROD-055,Papa,30,,150,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-057.Imagen.214817.jpg
+PROD-056,Pepino,30,,220,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-058.Imagen.214907.jpg
+PROD-057,Rábanos,2,,25,,Unidad,Verduras y Legumbres,pieza,SI,Disponible,,1,1,assets/images/PRODUCTOS_Images/PROD-059.Imagen.215541.jpg
+PROD-058,Tomate,65,50,40,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-060.Imagen.215010.jpg
+PROD-059,Tomatillo,70,60,50,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-061.Imagen.215814.jpg
+PROD-060,Verdolaga,36,,150,NO,Peso,Hierbas,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-062.Imagen.215740.jpg
+PROD-061,Zanahoria,26,,120,SI,Peso,Verduras y Legumbres,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/PROD-063.Imagen.215510.jpg
+PROD-062,Chile serrano (verde),72,,15,SI,Peso,Chiles,kg,SI,Disponible,,50,50,assets/images/PRODUCTOS_Images/f6e0268d.Imagen.212306.jpg
 PROD-063,Cilantro,,,,,Monto,Hierbas,monto,SI,Disponible,,5,1,https://drarjan.com/wp-content/uploads/2020/05/cilantro.jpg
 PROD-064,Perejil,,,,,Monto,Hierbas,monto,SI,Disponible,,2,1,https://tse1.mm.bing.net/th/id/OIP.dLyteGb3eOTurkqsZqPIKgHaFq?r=0&rs=1&pid=ImgDetMain&o=7&rm=3
 PROD-065,Hierbabuena,,,,,Monto,Hierbas,monto,SI,Disponible,,2,1,https://tse1.mm.bing.net/th/id/OIP.TSw-kvSIvUuvBxKqa67IiQHaHb?r=0&w=577&h=579&rs=1&pid=ImgDetMain&o=7&rm=3
 PROD-066,Epazote,,,,,Monto,Hierbas,monto,SI,Disponible,,2,1,https://tse2.mm.bing.net/th/id/OIP.xUsmaR8RX_GqGZD-CAQ3oQHaHa?r=0&rs=1&pid=ImgDetMain&o=7&rm=3
 PROD-067,Manzanilla,,,,,Monto,Hierbas,monto,SI,Disponible,,2,1,https://tse3.mm.bing.net/th/id/OIP.s7020mPwJfoL9Udqkeqy-gHaHa?r=0&rs=1&pid=ImgDetMain&o=7&rm=3
-PROD-068,Piloncillo Blanco,180,,,,Pieza por kg,Semillas y abarrotes,pieza,SI,Disponible,,1,1,https://th.bing.com/th/id/R.58069a0ce5111c596cd6ee3ec5282f60?rik=FP3YuMfr00dzdA&pid=ImgRaw&r=0
-PROD-069,Piloncillo Moreno,180,,,,Pieza por kg,Semillas y abarrotes,pieza,SI,Disponible,,1,1,https://www.csmobee.com/tienda/156-thickbox_default/piloncillo-1-kg.jpg
-PROD-070,Chía,140,,,NO,Peso,Semillas y abarrotes,kg,SI,Especial,,50,50,https://cdn.pixabay.com/photo/2016/10/28/14/12/chia-1778083_1280.jpg
+PROD-068,Piloncillo Blanco,180,,120,,Pieza por kg,Semillas y abarrotes,pieza,SI,Disponible,,1,1,https://th.bing.com/th/id/R.58069a0ce5111c596cd6ee3ec5282f60?rik=FP3YuMfr00dzdA&pid=ImgRaw&r=0
+PROD-069,Piloncillo Moreno,180,,120,,Pieza por kg,Semillas y abarrotes,pieza,SI,Disponible,,1,1,https://www.csmobee.com/tienda/156-thickbox_default/piloncillo-1-kg.jpg
+PROD-070,Chía,140,,100,NO,Peso,Semillas y abarrotes,kg,SI,Especial,,50,50,https://cdn.pixabay.com/photo/2016/10/28/14/12/chia-1778083_1280.jpg
+PROD-071,Jengibre,130,,100,NO,peso,Semillas y abarrotes,kg,SI,Especial,NO,50,10,https://tse3.mm.bing.net/th/id/OIP.eRkIzaNLZVmFEazyudwV3AHaE8?r=0&rs=1&pid=ImgDetMain&o=7&rm=3
+PROD-072,Lentejas,150,,,NO,peso,Semillas y abarrotes,kg,SI,Disponible,NO,50,50,https://cdn.pixabay.com/photo/2020/05/25/19/00/umbrian-mountain-lentils-5220018_1280.jpg
+PROD-073,Garbanzos,100,,,NO,peso,Semillas y abarrotes,kg,SI,Disponible,NO,50,50,https://images.pexels.com/photos/7717474/pexels-photo-7717474.jpeg?cs=srgb&dl=pexels-marina-zasorina-7717474.jpg&fm=jpg
+PROD-074,Pepita verde Molida,100,,,,,,,si,Disponible,NO,50,50,https://th.bing.com/th/id/R.25c9dfd0ac3639a9f5b49d800576a0b4?rik=g1jjGty3m%2fTaSg&pid=ImgRaw&r=0
+PROD-075,Pan Molido,40,,,NO,peso,semillas y abarrotes,kg,SI,Disponible,NO,50,20,https://http2.mlstatic.com/D_NQ_NP_948182-MLM47366174948_092021-O.webp
+PROD-076,Ciruela Pasa,100,,,No,peos,semillas y abarrotes,kg,SI,Disponible,,50,50,https://www.eluniversal.com.mx/resizer/4SbiJCJsELftp9k3yKZcLkMqyTg=/1100x666/cloudfront-us-east-1.images.arcpublishing.com/eluniversal/N2HJCB5BTRCCJLNQAGTQC2ON2I.jpg
+PROD-077,Pasas,100,,,No,peso,semillas y abarrotes,kg,SI,Disponible,,50,50,https://th.bing.com/th/id/R.440fa30f58b41d4ce3b5e0aa358a1f67?rik=lcxQwgYw5sZvKA&riu=http%3a%2f%2festag.fimagenes.com%2fimagenesred%2ffb_1460866_not-encoding.jpg&ehk=cuWyGPznZPMCwkieYqFMwZm4s3cDGZM4rUYmM6FqUsM%3d&risl=&pid=ImgRaw&r=0
+PROD-078,Frijol Peruano,100,,,No,peso,semillas y abarrotes,kg,SI,Disponible,,50,50,https://tse2.mm.bing.net/th/id/OIP.W-HikWixthbP2FD4jZ50kgHaHa?r=0&rs=1&pid=ImgDetMain&o=7&rm=3
+PROD-079,Té de Limón,100,,,Si,unidad,hierbas,pieza,SI,Disponible,,1,1,https://www.soriana.com/dw/image/v2/BGBD_PRD/on/demandware.static/-/Sites-soriana-grocery-master-catalog/default/dwe460d966/images/product/0000000005517_B.jpg?sw=445&sh=445&sm=fit
+PROD-080,Hierbas de olor,100,,,si,unidad,hierbas,pieza,SI,Disponible,,1,1,https://rootsmarket.com.mx/front/multimedia/productos/693a177ba16c9.webp
+PROD-081,Tamarindo,100,,,si,peso,semillas y abarrotes,kg,SI,Disponible,,50,50,
+PROD-082,canela,100,,,si,unidad,semillas y abarrotes,pieza,SI,Disponible,,1,1,
+PROD-083,Jamaica,100,,,No,peso,semillas y abarrotes,kg,SI,Disponible,,50,50,
+PROD-084,Nuez,100,,,No,peso,semillas y abarrotes,kg,SI,Disponible,,50,50,
+PROD-085,Uva,100,,,No,peso,semillas y abarrotes,kg,SI,Disponible,,50,50,
+PROD-086,arándanos,100,,,No,peso,semillas y abarrotes,kg,SI,Disponible,,50,50,
+PROD-087,Lechuga Romana,28,,1000,SI,Unidad,Hierbas,pieza,SI,Disponible,,1,1,
+PROD-088,Lechuga Italiana,28,,800,SI,Unidad,Hierbas,pieza,SI,Disponible,,1,1,
+PROD-089,Tejocote,60,,40,Si,peso,Frutas,kg,si,Disponible,,50,50,
+PROD-090,Caña de azucar ,40,,150,Si,Peso,Frutas,kg,si,Disponible,,50,50,

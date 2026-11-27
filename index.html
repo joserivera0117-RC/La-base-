@@ -49,10 +49,20 @@
       </div>
       <div class="hero-art reveal" aria-label="Productos de Recaudería La Base">
         <div class="swap-orbit" aria-hidden="true"></div><div class="swap-orbit swap-orbit-two" aria-hidden="true"></div>
-        <div class="swap-stage" id="hero-swap" aria-live="polite">
-          <article class="swap-card"><img src="assets/images/PRODUCTOS_Images/PROD-001.Imagen.200648.jpg" alt="Aguacate fresco" fetchpriority="high"><div class="swap-caption"><span>01 / Frutas</span><strong>Aguacate</strong></div></article>
-          <article class="swap-card"><img src="assets/images/PRODUCTOS_Images/PROD-016.Imagen.211552.jpg" alt="Chile de árbol" loading="lazy"><div class="swap-caption"><span>02 / Chiles secos</span><strong>Chiles ArboL Seco</strong></div></article>
-          <article class="swap-card"><img src="assets/images/PRODUCTOS_Images/PROD-033.Imagen.214223.jpg"  alt="Frijol negro" loading="lazy"><div class="swap-caption"><span>03 / Semillas y abarrotes</span><strong>Frijol negro</strong></div></article>
+        <div class="swap-stage" id="hero-swap" aria-label="Promociones destacadas">
+          <a class="swap-card" data-swap-index="0" href="#offers-container" aria-label="Ver ofertas de hoy"><img src="assets/images/CARRUSEL_Images/Ofertas .jpeg" alt="Ofertas de hoy en Recaudería La Base" fetchpriority="high"></a>
+          <a class="swap-card" data-swap-index="1" href="#specials-container" aria-label="Ver surtido recién llegado"><img src="assets/images/CARRUSEL_Images/Llego_hoy.jpeg" alt="Surtido fresco que llegó hoy" loading="lazy"></a>
+          <a class="swap-card" data-swap-index="2" href="#paquetes" aria-label="Ver paquetes de temporada"><img src="assets/images/CARRUSEL_Images/Paquetes.jpeg" alt="Paquetes de temporada para ponche y ensalada" loading="lazy"></a>
+        </div>
+        <div class="swap-controls" aria-label="Controles del carrusel">
+          <button type="button" class="swap-arrow" id="swap-previous" aria-label="Mostrar tarjeta anterior">‹</button>
+          <div class="swap-pagination" role="group" aria-label="Elegir tarjeta">
+            <button type="button" data-swap-to="0" aria-label="Mostrar oferta del día" aria-pressed="true"></button>
+            <button type="button" data-swap-to="1" aria-label="Mostrar lo que llegó hoy" aria-pressed="false"></button>
+            <button type="button" data-swap-to="2" aria-label="Mostrar paquetes de temporada" aria-pressed="false"></button>
+          </div>
+          <span class="swap-counter" id="swap-counter" aria-live="polite">1 / 3</span>
+          <button type="button" class="swap-arrow" id="swap-next" aria-label="Mostrar siguiente tarjeta">›</button>
         </div>
         <div class="swap-label"><span>✳</span> El mercado de todos los días</div>
       </div>
@@ -97,6 +107,35 @@
         </div>
         <div class="product-grid" id="product-grid" aria-live="polite"></div>
         <div class="catalog-footer"><p id="catalog-count"></p><button class="button button-outline" id="show-more" type="button">Ver más productos <span aria-hidden="true">↓</span></button></div>
+      </div>
+    </section>
+
+    <section class="packages-section section-pad" id="paquetes">
+      <div class="wrap">
+        <div class="section-heading reveal">
+          <div><p class="eyebrow"><span class="eyebrow-line"></span> Temporada en La Base</p><h2>Paquetes para compartir<br><em>y celebrar.</em></h2></div>
+          <p class="section-intro">Arma una sugerencia para 10 personas y ajusta las cantidades antes de enviarla por WhatsApp.</p>
+        </div>
+        <div class="package-grid">
+          <article class="package-card reveal">
+            <div class="package-card-image"><img src="assets/images/CARRUSEL_Images/Ponche.webp" alt="Ponche tradicional con fruta, caña, piloncillo y canela" loading="lazy"><span>Base para 10 personas</span></div>
+            <div class="package-card-content">
+              <p class="package-kicker">Ponche navideño</p>
+              <h3>La mezcla clásica</h3>
+              <p>Frutas, piloncillo y especias con cantidades sugeridas para compartir.</p>
+              <button class="button button-dark package-open" type="button" data-package="ponche">Personalizar ponche <span aria-hidden="true">↗</span></button>
+            </div>
+          </article>
+          <article class="package-card reveal">
+            <div class="package-card-image"><img src="assets/images/CARRUSEL_Images/ensalada_de-manzana.jpg" alt="Ensalada de manzana con crema, fruta, nuez y pasas" loading="lazy"><span>Base para 10 personas</span></div>
+            <div class="package-card-content">
+              <p class="package-kicker">Ensalada de manzana</p>
+              <h3>Una opción cremosa y fresca</h3>
+              <p>Fruta, nueces y pasas con complementos editables según tu receta.</p>
+              <button class="button button-dark package-open" type="button" data-package="ensalada">Personalizar ensalada <span aria-hidden="true">↗</span></button>
+            </div>
+          </article>
+        </div>
       </div>
     </section>
 
@@ -214,6 +253,26 @@
           <button class="button button-dark order-customer-submit" type="submit">Continuar a WhatsApp <span aria-hidden="true">↗</span></button>
         </div>
       </form>
+    </section>
+  </div>
+
+  <div class="package-modal-backdrop" id="package-modal-backdrop" hidden></div>
+  <div class="package-modal-wrapper" id="package-modal-wrapper" hidden>
+    <section class="package-modal-card" role="dialog" aria-modal="true" aria-labelledby="package-modal-title">
+      <div class="package-modal-head">
+        <div><p class="eyebrow"><span class="eyebrow-line"></span> Personaliza tu paquete</p><h2 id="package-modal-title">Paquete</h2></div>
+        <button class="drawer-close" id="package-modal-close" type="button" aria-label="Cerrar paquete">×</button>
+      </div>
+      <div class="package-servings">
+        <span>Personas</span>
+        <button type="button" id="package-minus" aria-label="Disminuir personas">−</button>
+        <strong id="package-servings-value">10</strong>
+        <button type="button" id="package-plus" aria-label="Aumentar personas">+</button>
+      </div>
+      <div class="package-ingredients" id="package-ingredients"></div>
+      <p class="package-confirmation-note" id="package-confirmation-note">El total es orientativo: los productos por peso se confirman al pesarlos y los marcados como “por confirmar” requieren precio y existencia.</p>
+      <div class="package-total-row"><span>Total estimado disponible</span><strong id="package-total">$0 MXN</strong></div>
+      <button class="button button-dark package-send" id="package-send" type="button">Enviar paquete por WhatsApp <span aria-hidden="true">↗</span></button>
     </section>
   </div>
 

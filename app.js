@@ -19,6 +19,39 @@
     { name: 'Hierbas', image: 'CAT-006.Imagen_categoria.050551.jpg', icon: '06', description: 'Un toque fresco para cocinar.' }
   ];
 
+  const PACKAGE_RECIPES = {
+    ponche: {
+      title: 'Ponche navideño',
+      ingredients: [
+        { id: 'PROD-008', name: 'Naranja', quantity: 1000, unit: 'g', step: 50 },
+        { id: 'PROD-002', name: 'Guayaba', quantity: 500, unit: 'g', step: 50 },
+        { id: 'PROD-006', name: 'Manzana roja', quantity: 500, unit: 'g', step: 50 },
+        { id: 'PROD-068', name: 'Piloncillo blanco', quantity: 300, unit: 'g', step: 50 },
+        { id: 'PROD-082', name: 'Canela', quantity: 4, unit: 'pieza', step: 1 },
+        { id: 'PROD-083', name: 'Jamaica', quantity: 100, unit: 'g', step: 50 },
+        { id: 'PROD-081', name: 'Tamarindo', quantity: 200, unit: 'g', step: 50 },
+        { id: 'PROD-077', name: 'Pasas', quantity: 150, unit: 'g', step: 50 },
+        { id: 'PROD-076', name: 'Ciruela pasa', quantity: 150, unit: 'g', step: 50 },
+        { id: 'PROD-089', name: 'Tejocote', quantity: 500, unit: 'g', step: 50 },
+        { id: 'PROD-090', name: 'Caña de azúcar', quantity: 4, unit: 'pieza', step: 1 }
+      ]
+    },
+    ensalada: {
+      title: 'Ensalada de manzana',
+      ingredients: [
+        { id: 'PROD-006', name: 'Manzana roja', quantity: 1000, unit: 'g', step: 50 },
+        { id: 'PROD-010', name: 'Piña', quantity: 1, unit: 'pieza', step: 1 },
+        { id: 'PROD-013', name: 'Plátano macho', quantity: 500, unit: 'g', step: 50 },
+        { id: 'PROD-077', name: 'Pasas', quantity: 100, unit: 'g', step: 50 },
+        { id: 'PROD-084', name: 'Nuez', quantity: 150, unit: 'g', step: 50 },
+        { id: 'PROD-086', name: 'Arándanos', quantity: 100, unit: 'g', step: 50 },
+        { id: null, name: 'Crema', quantity: 500, unit: 'ml', step: 50, confirm: true },
+        { id: null, name: 'Leche condensada', quantity: 1, unit: 'lata', step: 1, confirm: true },
+        { id: null, name: 'Malvaviscos', quantity: 200, unit: 'g', step: 50, confirm: true }
+      ]
+    }
+  };
+
   // Lista de productos más vendidos / básicos por categoría para priorizarlos
   const BESTSELLERS = [
     'jitomate', 'cebolla', 'chile serrano', 'chile jalapeño', 'chile morron', 'chile morrón', 
@@ -166,33 +199,177 @@
   let deliveryMode = 'recoger'; // 'recoger' | 'domicilio'
   let lastFocus = null;
   let currentOrderMessage = '';
+  let activePackageKey = null;
+  let packageServings = 10;
 
-  // The hero card stack uses the supplied product photographs and pauses for hover, focus, or reduced motion.
+  // The hero carousel uses local artwork, manual controls, swipe, and optional autoplay.
   const swapStage = document.querySelector('#hero-swap');
   const swapCards = swapStage ? [...swapStage.querySelectorAll('.swap-card')] : [];
+  const swapCounter = document.querySelector('#swap-counter');
+  const swapPagination = [...document.querySelectorAll('[data-swap-to]')];
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let swapTimer = null;
   let swapPaused = false;
+  let swapHovered = false;
+  let swapFocused = false;
+  let swapBusy = false;
+  let swipeStartX = null;
+  let swipeResumeTimer = null;
+  let suppressSwapClick = false;
+  const swapDuration = 340;
+
+  function activeSwapIndex() {
+    return Number(swapStage?.querySelector('.swap-card:first-child')?.dataset.swapIndex || 0);
+  }
+
+  function updateSwapControls() {
+    if (!swapStage) return;
+    const activeIndex = activeSwapIndex();
+    if (swapCounter) swapCounter.textContent = `${activeIndex + 1} / ${swapCards.length}`;
+    swapPagination.forEach((button) => {
+      const active = Number(button.dataset.swapTo) === activeIndex;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', String(active));
+    });
+  }
+
+  function resetSwapTimer() {
+    window.clearInterval(swapTimer);
+    swapTimer = null;
+    if (!swapPaused) startSwap();
+  }
+
+  function finishSwap() {
+    swapBusy = false;
+    updateSwapControls();
+    resetSwapTimer();
+  }
+
+  function showNextSwap() {
+    if (!swapStage || swapBusy || swapCards.length < 2) return;
+    swapBusy = true;
+    const front = swapStage.querySelector('.swap-card:first-child');
+    front.classList.add('is-leaving');
+    window.setTimeout(() => {
+      front.classList.remove('is-leaving');
+      swapStage.appendChild(front);
+      finishSwap();
+    }, swapDuration);
+  }
+
+  function showPreviousSwap() {
+    if (!swapStage || swapBusy || swapCards.length < 2) return;
+    swapBusy = true;
+    const back = swapStage.querySelector('.swap-card:last-child');
+    back.classList.add('is-entering');
+    swapStage.prepend(back);
+    window.setTimeout(() => {
+      back.classList.remove('is-entering');
+      finishSwap();
+    }, swapDuration);
+  }
+
+  function moveSwapTo(index) {
+    if (!swapStage || swapBusy || index === activeSwapIndex()) return;
+    resetSwapTimer();
+    const total = swapCards.length;
+    const forward = (index - activeSwapIndex() + total) % total;
+    const backward = (activeSwapIndex() - index + total) % total;
+    const move = forward <= backward ? showNextSwap : showPreviousSwap;
+    move();
+    window.setTimeout(() => moveSwapTo(index), swapDuration + 40);
+  }
+
   function startSwap() {
     if (!swapStage || reducedMotion.matches || swapPaused || swapTimer || swapCards.length < 2) return;
     swapTimer = window.setInterval(() => {
-      const front = swapStage.querySelector('.swap-card:first-child');
-      if (!front) return;
-      front.classList.add('is-leaving');
-      window.setTimeout(() => {
-        front.classList.remove('is-leaving');
-        swapStage.appendChild(front);
-      }, 760);
-    }, 4100);
+      showNextSwap();
+    }, 2600);
   }
   function pauseSwap() { swapPaused = true; window.clearInterval(swapTimer); swapTimer = null; }
   function resumeSwap() { swapPaused = false; startSwap(); }
+  function scheduleSwapResume() {
+    window.clearTimeout(swipeResumeTimer);
+    if (!swapHovered && !swapFocused) {
+      swipeResumeTimer = window.setTimeout(resumeSwap, swapDuration);
+    }
+  }
   if (swapStage) {
-    swapStage.addEventListener('mouseenter', pauseSwap);
-    swapStage.addEventListener('mouseleave', resumeSwap);
-    swapStage.addEventListener('focusin', pauseSwap);
-    swapStage.addEventListener('focusout', resumeSwap);
-    reducedMotion.addEventListener?.('change', () => reducedMotion.matches ? pauseSwap() : resumeSwap());
+    const swapRegion = swapStage.parentElement;
+    swapRegion.addEventListener('mouseenter', () => {
+      swapHovered = true;
+      pauseSwap();
+    });
+    swapRegion.addEventListener('mouseleave', () => {
+      swapHovered = false;
+      if (!swapFocused) resumeSwap();
+    });
+    swapRegion.addEventListener('focusin', () => {
+      swapFocused = true;
+      pauseSwap();
+    });
+    swapRegion.addEventListener('focusout', (event) => {
+      if (!swapRegion.contains(event.relatedTarget)) {
+        swapFocused = false;
+        if (!swapHovered) resumeSwap();
+      }
+    });
+    swapStage.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        showNextSwap();
+      } else if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        showPreviousSwap();
+      }
+    });
+    swapStage.addEventListener('pointerdown', (event) => {
+      if (event.pointerType === 'touch') {
+        window.clearTimeout(swipeResumeTimer);
+        swipeStartX = event.clientX;
+        pauseSwap();
+        swapStage.setPointerCapture(event.pointerId);
+      }
+    });
+    swapStage.addEventListener('pointerup', (event) => {
+      if (swipeStartX === null) return;
+      const swipeDistance = event.clientX - swipeStartX;
+      swipeStartX = null;
+      if (Math.abs(swipeDistance) >= 45) {
+        suppressSwapClick = true;
+        window.setTimeout(() => { suppressSwapClick = false; }, 300);
+        if (swipeDistance < 0) showNextSwap();
+        else showPreviousSwap();
+      }
+      scheduleSwapResume();
+    });
+    swapStage.addEventListener('pointercancel', () => {
+      swipeStartX = null;
+      scheduleSwapResume();
+    });
+    swapStage.addEventListener('click', (event) => {
+      if (suppressSwapClick) {
+        event.preventDefault();
+        suppressSwapClick = false;
+        return;
+      }
+      const card = event.target.closest('.swap-card');
+      const destination = card && document.querySelector(card.getAttribute('href'));
+      if (destination?.hidden) {
+        event.preventDefault();
+        window.location.hash = '#productos';
+      }
+    }, true);
+    document.querySelector('#swap-next')?.addEventListener('click', showNextSwap);
+    document.querySelector('#swap-previous')?.addEventListener('click', showPreviousSwap);
+    swapPagination.forEach((button) => {
+      button.addEventListener('click', () => moveSwapTo(Number(button.dataset.swapTo)));
+    });
+    updateSwapControls();
+    reducedMotion.addEventListener?.('change', () => {
+      if (reducedMotion.matches) pauseSwap();
+      else if (!swapHovered && !swapFocused) resumeSwap();
+    });
     startSwap();
   }
 
@@ -205,6 +382,152 @@
       scrollFrame = false;
     });
   }, { passive: true });
+
+  const packageModalBackdrop = document.querySelector('#package-modal-backdrop');
+  const packageModalWrapper = document.querySelector('#package-modal-wrapper');
+  const packageModalTitle = document.querySelector('#package-modal-title');
+  const packageIngredients = document.querySelector('#package-ingredients');
+  const packageServingsValue = document.querySelector('#package-servings-value');
+  const packageTotal = document.querySelector('#package-total');
+  let activePackageIngredients = [];
+
+  function estimatePackageIngredient(ingredient) {
+    if (!ingredient.id) return 0;
+    const product = products.find((item) => item.id === ingredient.id);
+    if (!product) return 0;
+    const price = getEffectivePrice(product);
+    if (ingredient.unit === 'g' || ingredient.unit === 'ml') return price * (ingredient.quantity / 1000);
+    if (ingredient.unit === 'pieza' && ['peso', 'pieza-peso'].includes(product.saleType)) {
+      return price * (product.pieceWeightGrams * ingredient.quantity / 1000);
+    }
+    return price * ingredient.quantity;
+  }
+
+  function formatPackageQuantity(ingredient) {
+    if (ingredient.unit === 'g') return `${formatQuantity(ingredient.quantity)} g`;
+    if (ingredient.unit === 'ml') return `${formatQuantity(ingredient.quantity)} ml`;
+    if (ingredient.unit === 'pieza') return `${formatQuantity(ingredient.quantity)} ${ingredient.quantity === 1 ? 'pieza' : 'piezas'}`;
+    if (ingredient.unit === 'lata') return `${formatQuantity(ingredient.quantity)} ${ingredient.quantity === 1 ? 'lata' : 'latas'}`;
+    return `${formatQuantity(ingredient.quantity)} ${ingredient.unit || ''}`;
+  }
+
+  function updatePackageEstimate() {
+    const total = activePackageIngredients.reduce((sum, ingredient) => sum + estimatePackageIngredient(ingredient), 0);
+    packageTotal.textContent = `$${formatMoney(total)} MXN`;
+  }
+
+  function packageIngredientNeedsConfirmation(ingredient) {
+    return ingredient.confirm === true || !ingredient.id || !products.some((product) => product.id === ingredient.id);
+  }
+
+  function renderPackageIngredients() {
+    if (!packageIngredients) return;
+    packageIngredients.innerHTML = activePackageIngredients.map((ingredient, index) => `
+      <div class="package-ingredient">
+        <div class="package-ingredient-name">
+          <strong>${escapeHtml(ingredient.name)}</strong>
+          <small class="${packageIngredientNeedsConfirmation(ingredient) ? 'is-confirm' : ''}">${packageIngredientNeedsConfirmation(ingredient) ? 'Por confirmar disponibilidad y precio' : 'Producto disponible en el catálogo'}</small>
+        </div>
+        <button type="button" data-package-minus="${index}" aria-label="Disminuir ${escapeHtml(ingredient.name)}">−</button>
+        <span class="package-ingredient-value">${formatPackageQuantity(ingredient)}</span>
+        <button type="button" data-package-plus="${index}" aria-label="Aumentar ${escapeHtml(ingredient.name)}">+</button>
+        <button type="button" class="package-ingredient-remove" data-package-remove="${index}" aria-label="Quitar ${escapeHtml(ingredient.name)} del paquete"${activePackageIngredients.length === 1 ? ' disabled' : ''}>×</button>
+      </div>`).join('');
+
+    packageIngredients.querySelectorAll('[data-package-minus]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const ingredient = activePackageIngredients[Number(button.dataset.packageMinus)];
+        const minimum = ingredient.unit === 'pieza' || ingredient.unit === 'lata' ? 1 : ingredient.step;
+        ingredient.quantity = Math.max(minimum, ingredient.quantity - ingredient.step);
+        renderPackageIngredients();
+        updatePackageEstimate();
+      });
+    });
+    packageIngredients.querySelectorAll('[data-package-remove]').forEach((button) => {
+      button.addEventListener('click', () => {
+        if (activePackageIngredients.length <= 1) return;
+        activePackageIngredients.splice(Number(button.dataset.packageRemove), 1);
+        renderPackageIngredients();
+        updatePackageEstimate();
+      });
+    });
+    packageIngredients.querySelectorAll('[data-package-plus]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const ingredient = activePackageIngredients[Number(button.dataset.packagePlus)];
+        ingredient.quantity += ingredient.step;
+        renderPackageIngredients();
+        updatePackageEstimate();
+      });
+    });
+  }
+
+  function openPackageModal(key) {
+    const recipe = PACKAGE_RECIPES[key];
+    if (!recipe || !packageModalWrapper) return;
+    activePackageKey = key;
+    packageServings = 10;
+    activePackageIngredients = recipe.ingredients.map((ingredient) => ({ ...ingredient }));
+    packageModalTitle.textContent = recipe.title;
+    packageServingsValue.textContent = '10';
+    renderPackageIngredients();
+    updatePackageEstimate();
+    packageModalBackdrop.hidden = false;
+    packageModalWrapper.hidden = false;
+    document.body.classList.add('no-scroll');
+  }
+
+  function closePackageModal() {
+    packageModalBackdrop.hidden = true;
+    packageModalWrapper.hidden = true;
+    document.body.classList.remove('no-scroll');
+  }
+
+  document.querySelectorAll('[data-package]').forEach((button) => {
+    button.addEventListener('click', () => openPackageModal(button.dataset.package));
+  });
+  document.querySelector('#package-modal-close')?.addEventListener('click', closePackageModal);
+  packageModalBackdrop?.addEventListener('click', closePackageModal);
+  document.querySelector('#package-minus')?.addEventListener('click', () => {
+    if (packageServings <= 2) return;
+    const previous = packageServings;
+    packageServings -= 1;
+    activePackageIngredients.forEach((ingredient) => {
+      ingredient.quantity = Math.max(ingredient.step, Math.round((ingredient.quantity / previous) * packageServings / ingredient.step) * ingredient.step);
+    });
+    packageServingsValue.textContent = String(packageServings);
+    renderPackageIngredients();
+    updatePackageEstimate();
+  });
+  document.querySelector('#package-plus')?.addEventListener('click', () => {
+    if (packageServings >= 30) return;
+    const previous = packageServings;
+    packageServings += 1;
+    activePackageIngredients.forEach((ingredient) => {
+      ingredient.quantity = Math.max(ingredient.step, Math.round((ingredient.quantity / previous) * packageServings / ingredient.step) * ingredient.step);
+    });
+    packageServingsValue.textContent = String(packageServings);
+    renderPackageIngredients();
+    updatePackageEstimate();
+  });
+  document.querySelector('#package-send')?.addEventListener('click', () => {
+    const recipe = PACKAGE_RECIPES[activePackageKey];
+    if (!recipe) return;
+    const lines = [
+      'Hola, Recaudería La Base.',
+      '',
+      `Quiero consultar el paquete de *${recipe.title}* para *${packageServings} personas*.`,
+      '',
+      '*Ingredientes y cantidades:*'
+    ];
+    activePackageIngredients.forEach((ingredient) => {
+      lines.push(`• ${ingredient.name}: ${formatPackageQuantity(ingredient)}${packageIngredientNeedsConfirmation(ingredient) ? ' (por confirmar)' : ''}`);
+    });
+    lines.push('');
+    lines.push(`*Total estimado disponible:* ${packageTotal.textContent}`);
+    lines.push('Me confirman disponibilidad, precio final y los complementos marcados como por confirmar. Gracias.');
+    const packageWindow = window.open(waUrl(lines.join('\n')), '_blank');
+    if (packageWindow) packageWindow.opener = null;
+  });
 
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   const waUrl = (message) => `https://wa.me/${PHONE}?text=${encodeURIComponent(message)}`;
@@ -400,7 +723,7 @@
     }).join('');
     categoryGrid.querySelectorAll('[data-category]').forEach((button) => button.addEventListener('click', () => {
       setCategory(button.dataset.category);
-      document.querySelector('#productos').scrollIntoView({ behavior: 'smooth' });
+      productGrid.scrollIntoView({ behavior: 'instant', block: 'start' });
     }));
     observeReveals(categoryGrid);
   }
@@ -509,7 +832,7 @@
     const matches = products.filter((product) => {
       const matchesCategory = activeCategory === 'Todos'
         || activeCategory === FAVORITES_FILTER
-        || product.category === activeCategory;
+        || normalize(product.category) === normalize(activeCategory);
       const matchesFavorite = activeCategory !== FAVORITES_FILTER || favoriteIds.has(String(product.id));
       const matchesSearch = !term || normalize(`${product.name} ${product.category} ${product.unit}`).includes(term);
       return matchesCategory && matchesFavorite && matchesSearch;
