@@ -23,14 +23,12 @@
     ponche: {
       title: 'Ponche navideño',
       ingredients: [
-        { id: 'PROD-008', name: 'Naranja', quantity: 1000, unit: 'g', step: 50 },
         { id: 'PROD-002', name: 'Guayaba', quantity: 500, unit: 'g', step: 50 },
-        { id: 'PROD-006', name: 'Manzana roja', quantity: 500, unit: 'g', step: 50 },
-        { id: 'PROD-068', name: 'Piloncillo blanco', quantity: 300, unit: 'g', step: 50 },
+        { id: 'PROD-092', name: 'Manzana Amarilla Chica', quantity: 1000, unit: 'g', step: 50 },
+        { id: 'PROD-069', name: 'Piloncillo Moreno', quantity: 300, unit: 'g', step: 50 },
         { id: 'PROD-082', name: 'Canela', quantity: 4, unit: 'pieza', step: 1 },
         { id: 'PROD-083', name: 'Jamaica', quantity: 100, unit: 'g', step: 50 },
         { id: 'PROD-081', name: 'Tamarindo', quantity: 200, unit: 'g', step: 50 },
-        { id: 'PROD-077', name: 'Pasas', quantity: 150, unit: 'g', step: 50 },
         { id: 'PROD-076', name: 'Ciruela pasa', quantity: 150, unit: 'g', step: 50 },
         { id: 'PROD-089', name: 'Tejocote', quantity: 500, unit: 'g', step: 50 },
         { id: 'PROD-090', name: 'Caña de azúcar', quantity: 4, unit: 'pieza', step: 1 }
@@ -39,15 +37,11 @@
     ensalada: {
       title: 'Ensalada de manzana',
       ingredients: [
-        { id: 'PROD-006', name: 'Manzana roja', quantity: 1000, unit: 'g', step: 50 },
+        { id: 'PROD-091', name: 'Manzana Amarilla Grande', quantity: 1000, unit: 'g', step: 50 },
         { id: 'PROD-010', name: 'Piña', quantity: 1, unit: 'pieza', step: 1 },
-        { id: 'PROD-013', name: 'Plátano macho', quantity: 500, unit: 'g', step: 50 },
         { id: 'PROD-077', name: 'Pasas', quantity: 100, unit: 'g', step: 50 },
         { id: 'PROD-084', name: 'Nuez', quantity: 150, unit: 'g', step: 50 },
-        { id: 'PROD-086', name: 'Arándanos', quantity: 100, unit: 'g', step: 50 },
-        { id: null, name: 'Crema', quantity: 500, unit: 'ml', step: 50, confirm: true },
-        { id: null, name: 'Leche condensada', quantity: 1, unit: 'lata', step: 1, confirm: true },
-        { id: null, name: 'Malvaviscos', quantity: 200, unit: 'g', step: 50, confirm: true }
+        { id: 'PROD-086', name: 'Arándanos', quantity: 100, unit: 'g', step: 50 }
       ]
     }
   };
@@ -176,6 +170,40 @@
   const saveSelected = () => {
     try { localStorage.setItem('labased_lista', JSON.stringify(Object.fromEntries(selected))); } catch (_) {}
   };
+  const selectedPackages = new Map();
+  try {
+    const savedPackages = JSON.parse(localStorage.getItem('labased_paquetes') || '[]');
+    if (!Array.isArray(savedPackages)) throw new TypeError('El formato guardado debe ser una lista.');
+    savedPackages.forEach((savedPackage) => {
+      if (!savedPackage || typeof savedPackage.id !== 'string' || !PACKAGE_RECIPES[savedPackage.key] || !Array.isArray(savedPackage.ingredients)) return;
+      const ingredients = savedPackage.ingredients
+        .filter((ingredient) => ingredient && typeof ingredient.id === 'string' && typeof ingredient.name === 'string')
+        .map((ingredient) => ({
+          ...ingredient,
+          quantity: parseDecimal(ingredient.quantity),
+          step: parseDecimal(ingredient.step) || 1
+        }))
+        .filter((ingredient) => ingredient.quantity > 0);
+      if (!ingredients.length) return;
+      const recipe = PACKAGE_RECIPES[savedPackage.key];
+      selectedPackages.set(savedPackage.id, {
+        id: savedPackage.id,
+        key: savedPackage.key,
+        title: recipe.title,
+        servings: Math.min(30, Math.max(2, parseDecimal(savedPackage.servings) || 10)),
+        ingredients
+      });
+    });
+  } catch (error) {
+    console.warn('No se pudieron cargar los paquetes guardados.', error);
+  }
+  const saveSelectedPackages = () => {
+    try {
+      localStorage.setItem('labased_paquetes', JSON.stringify([...selectedPackages.values()]));
+    } catch (error) {
+      console.error('No se pudieron guardar los paquetes en este dispositivo.', error);
+    }
+  };
   const favoriteIds = new Set();
   try {
     const savedFavorites = JSON.parse(localStorage.getItem('labased_favoritos') || '[]');
@@ -201,6 +229,7 @@
   let currentOrderMessage = '';
   let activePackageKey = null;
   let packageServings = 10;
+  let packageTrigger = null;
 
   // The hero carousel uses local artwork, manual controls, swipe, and optional autoplay.
   const swapStage = document.querySelector('#hero-swap');
@@ -393,7 +422,8 @@
 
   function estimatePackageIngredient(ingredient) {
     if (!ingredient.id) return 0;
-    const product = products.find((item) => item.id === ingredient.id);
+    const product = products.find((item) => item.id === ingredient.id)
+      || products.find((item) => normalize(item.name) === normalize(ingredient.name));
     if (!product) return 0;
     const price = getEffectivePrice(product);
     if (ingredient.unit === 'g' || ingredient.unit === 'ml') return price * (ingredient.quantity / 1000);
@@ -401,6 +431,14 @@
       return price * (product.pieceWeightGrams * ingredient.quantity / 1000);
     }
     return price * ingredient.quantity;
+  }
+
+  function getPackageEstimate(ingredients) {
+    return ingredients.reduce((estimate, ingredient) => {
+      const amount = estimatePackageIngredient(ingredient);
+      if (amount <= 0) return { ...estimate, hasUnpriced: true };
+      return { total: estimate.total + Math.round(amount), hasUnpriced: estimate.hasUnpriced };
+    }, { total: 0, hasUnpriced: false });
   }
 
   function formatPackageQuantity(ingredient) {
@@ -412,12 +450,11 @@
   }
 
   function updatePackageEstimate() {
-    const total = activePackageIngredients.reduce((sum, ingredient) => sum + estimatePackageIngredient(ingredient), 0);
-    packageTotal.textContent = `$${formatMoney(total)} MXN`;
-  }
-
-  function packageIngredientNeedsConfirmation(ingredient) {
-    return ingredient.confirm === true || !ingredient.id || !products.some((product) => product.id === ingredient.id);
+    const estimate = getPackageEstimate(activePackageIngredients);
+    packageTotal.textContent = estimate.total > 0
+      ? `$${formatMoney(estimate.total)}${estimate.hasUnpriced ? '*' : ''} MXN`
+      : 'Por confirmar';
+    packageTotal.title = estimate.hasUnpriced ? 'Estimación parcial; hay precios por confirmar' : 'Total estimado';
   }
 
   function renderPackageIngredients() {
@@ -426,7 +463,6 @@
       <div class="package-ingredient">
         <div class="package-ingredient-name">
           <strong>${escapeHtml(ingredient.name)}</strong>
-          <small class="${packageIngredientNeedsConfirmation(ingredient) ? 'is-confirm' : ''}">${packageIngredientNeedsConfirmation(ingredient) ? 'Por confirmar disponibilidad y precio' : 'Producto disponible en el catálogo'}</small>
         </div>
         <button type="button" data-package-minus="${index}" aria-label="Disminuir ${escapeHtml(ingredient.name)}">−</button>
         <span class="package-ingredient-value">${formatPackageQuantity(ingredient)}</span>
@@ -483,7 +519,10 @@
   }
 
   document.querySelectorAll('[data-package]').forEach((button) => {
-    button.addEventListener('click', () => openPackageModal(button.dataset.package));
+    button.addEventListener('click', () => {
+      packageTrigger = button;
+      openPackageModal(button.dataset.package);
+    });
   });
   document.querySelector('#package-modal-close')?.addEventListener('click', closePackageModal);
   packageModalBackdrop?.addEventListener('click', closePackageModal);
@@ -512,21 +551,18 @@
   document.querySelector('#package-send')?.addEventListener('click', () => {
     const recipe = PACKAGE_RECIPES[activePackageKey];
     if (!recipe) return;
-    const lines = [
-      'Hola, Recaudería La Base.',
-      '',
-      `Quiero consultar el paquete de *${recipe.title}* para *${packageServings} personas*.`,
-      '',
-      '*Ingredientes y cantidades:*'
-    ];
-    activePackageIngredients.forEach((ingredient) => {
-      lines.push(`• ${ingredient.name}: ${formatPackageQuantity(ingredient)}${packageIngredientNeedsConfirmation(ingredient) ? ' (por confirmar)' : ''}`);
+    const id = `paquete-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    selectedPackages.set(id, {
+      id,
+      key: activePackageKey,
+      title: recipe.title,
+      servings: packageServings,
+      ingredients: activePackageIngredients.map((ingredient) => ({ ...ingredient }))
     });
-    lines.push('');
-    lines.push(`*Total estimado disponible:* ${packageTotal.textContent}`);
-    lines.push('Me confirman disponibilidad, precio final y los complementos marcados como por confirmar. Gracias.');
-    const packageWindow = window.open(waUrl(lines.join('\n')), '_blank');
-    if (packageWindow) packageWindow.opener = null;
+    saveSelectedPackages();
+    closePackageModal();
+    renderDrawerItems();
+    openDrawer(packageTrigger);
   });
 
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
@@ -1425,12 +1461,49 @@
     if (product && entry) openPortionModal(product, entry);
   }
 
+  function renderPackageDrawerItem(packageEntry) {
+    const estimate = getPackageEstimate(packageEntry.ingredients);
+    const ingredientItems = packageEntry.ingredients.map((ingredient, index) => {
+      const amount = estimatePackageIngredient(ingredient);
+      const minimum = ingredient.unit === 'pieza' || ingredient.unit === 'lata' ? 1 : ingredient.step;
+      return `<li class="drawer-package-ingredient">
+        <div class="drawer-package-ingredient-copy">
+          <strong>${escapeHtml(ingredient.name)}</strong>
+          <span>${formatPackageQuantity(ingredient)} · ${amount > 0 ? `aprox. $${formatMoney(Math.round(amount))}` : 'precio por confirmar'}</span>
+        </div>
+        <div class="drawer-package-ingredient-actions">
+          <button type="button" data-package-cart-minus="${escapeHtml(packageEntry.id)}" data-ingredient-index="${index}" aria-label="Disminuir ${escapeHtml(ingredient.name)}"${ingredient.quantity <= minimum ? ' disabled' : ''}>−</button>
+          <button type="button" data-package-cart-remove="${escapeHtml(packageEntry.id)}" data-ingredient-index="${index}" aria-label="Quitar ${escapeHtml(ingredient.name)} del paquete"${packageEntry.ingredients.length === 1 ? ' disabled' : ''}>×</button>
+          <button type="button" data-package-cart-plus="${escapeHtml(packageEntry.id)}" data-ingredient-index="${index}" aria-label="Aumentar ${escapeHtml(ingredient.name)}">+</button>
+        </div>
+      </li>`;
+    }).join('');
+    const totalText = estimate.total > 0
+      ? `~$${formatMoney(estimate.total)}${estimate.hasUnpriced ? '*' : ''}`
+      : 'Por confirmar';
+
+    return `<li class="drawer-package-card" data-package-id="${escapeHtml(packageEntry.id)}">
+      <details class="drawer-package-details">
+        <summary>
+          <span class="drawer-package-title"><strong>${escapeHtml(packageEntry.title)}</strong><small>Paquete · ${packageEntry.servings} personas · ${packageEntry.ingredients.length} productos</small></span>
+          <span class="drawer-package-total">${totalText}</span>
+        </summary>
+        <ul class="drawer-package-ingredients">${ingredientItems}</ul>
+        <button type="button" class="drawer-package-remove" data-remove-package="${escapeHtml(packageEntry.id)}">Quitar paquete</button>
+      </details>
+    </li>`;
+  }
+
   function renderDrawerItems() {
     const chosen = products.filter((product) => selected.has(product.id));
-    const totalCount = chosen.length;
+    const packages = [...selectedPackages.values()];
+    const expandedPackageIds = new Set([...drawerItems.querySelectorAll('.drawer-package-details[open]')]
+      .map((details) => details.closest('.drawer-package-card')?.dataset.packageId)
+      .filter(Boolean));
+    const totalCount = chosen.length + packages.length;
     let migratedSelection = false;
 
-    drawerItems.innerHTML = chosen.map((product) => {
+    const productItems = chosen.map((product) => {
       let entry = selected.get(product.id) || { mode: 'unidad', value: 1, unit: product.unit || 'unidad', estimated: getEffectivePrice(product) };
       if (product.saleType === 'pieza-peso') {
         const quantity = parseDecimal(entry.value);
@@ -1522,6 +1595,12 @@
         </div>
       </li>`;
     }).join('');
+    drawerItems.innerHTML = `${productItems}${packages.map(renderPackageDrawerItem).join('')}`;
+    drawerItems.querySelectorAll('.drawer-package-card').forEach((card) => {
+      if (expandedPackageIds.has(card.dataset.packageId)) {
+        card.querySelector('.drawer-package-details').open = true;
+      }
+    });
     if (migratedSelection) saveSelected();
 
     drawerItems.querySelectorAll('[data-remove]').forEach((button) => {
@@ -1530,6 +1609,36 @@
     drawerItems.querySelectorAll('[data-edit]').forEach((button) => {
       button.addEventListener('click', () => editSelectedProduct(button.dataset.edit));
     });
+    drawerItems.querySelectorAll('[data-remove-package]').forEach((button) => {
+      button.addEventListener('click', () => {
+        selectedPackages.delete(button.dataset.removePackage);
+        saveSelectedPackages();
+        renderDrawerItems();
+      });
+    });
+    drawerItems.querySelectorAll('[data-package-cart-minus], [data-package-cart-plus], [data-package-cart-remove]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const packageEntry = selectedPackages.get(button.dataset.packageCartMinus
+          || button.dataset.packageCartPlus
+          || button.dataset.packageCartRemove);
+        const ingredientIndex = Number(button.dataset.ingredientIndex);
+        const ingredient = packageEntry?.ingredients[ingredientIndex];
+        if (!packageEntry || !ingredient) return;
+
+        if (button.hasAttribute('data-package-cart-minus')) {
+          const minimum = ingredient.unit === 'pieza' || ingredient.unit === 'lata' ? 1 : ingredient.step;
+          ingredient.quantity = Math.max(minimum, ingredient.quantity - ingredient.step);
+        } else if (button.hasAttribute('data-package-cart-plus')) {
+          ingredient.quantity += ingredient.step;
+        } else {
+          if (packageEntry.ingredients.length <= 1) return;
+          packageEntry.ingredients.splice(ingredientIndex, 1);
+        }
+
+        saveSelectedPackages();
+        renderDrawerItems();
+      });
+    });
 
     drawerEmpty.hidden = totalCount > 0;
     drawerItems.hidden = totalCount === 0;
@@ -1537,16 +1646,21 @@
 
     // Calcular total estimado
     let estimatedTotal = 0;
-    let itemsWithPrice = 0;
+    let hasUnpriced = false;
     chosen.forEach((p) => {
       const entry = selected.get(p.id);
       const num = entry ? parseDecimal(entry.estimated) : getEffectivePrice(p);
-      if (num > 0) { estimatedTotal += Math.round(num); itemsWithPrice++; }
+      if (num > 0) estimatedTotal += Math.round(num);
+      else hasUnpriced = true;
+    });
+    packages.forEach((packageEntry) => {
+      const estimate = getPackageEstimate(packageEntry.ingredients);
+      estimatedTotal += estimate.total;
+      if (estimate.hasUnpriced) hasUnpriced = true;
     });
 
     if (drawerTotalAmount) {
       if (estimatedTotal > 0) {
-        const hasUnpriced = itemsWithPrice < chosen.length;
         drawerTotalAmount.textContent = `$${formatMoney(estimatedTotal)}${hasUnpriced ? '*' : ''}`;
         drawerTotalAmount.title = hasUnpriced ? 'Cálculo parcial basado en productos con precio publicado' : 'Total estimado';
       } else {
@@ -1559,34 +1673,50 @@
     listOpenButton.hidden = totalCount === 0;
     sendList.setAttribute('aria-disabled', String(totalCount === 0));
 
-    const lines = [
-      ORDER_GREETING,
-      '',
-      '*Productos*'
-    ];
+    const lines = [ORDER_GREETING, ''];
+    if (packages.length) {
+      lines.push('*Paquetes*');
+      packages.forEach((packageEntry, packageIndex) => {
+        if (packageIndex > 0) lines.push('');
+        lines.push(`*${packageEntry.title} — ${packageEntry.servings} personas*`);
+        packageEntry.ingredients.forEach((ingredient) => {
+          const amount = estimatePackageIngredient(ingredient);
+          const pricePart = amount > 0 ? ` · aprox. $${formatMoney(Math.round(amount))}` : ' · precio por confirmar';
+          lines.push(`• ${ingredient.name} — ${formatPackageQuantity(ingredient)}${pricePart}`);
+        });
+      });
+    }
 
-    chosen.forEach((p) => {
-      const entry = selected.get(p.id);
-      let portion = '';
-      if (entry?.mode === 'peso') portion = formatGrams(entry.value);
-      else if (entry?.mode === 'monto') portion = `por $${formatMoney(entry.value)}`;
-      else if (entry?.mode === 'pieza') portion = `${entry.value} ${Number(entry.value) === 1 ? 'pieza' : 'piezas'}`;
-      else if (entry) {
-        const unit = p.saleType === 'pieza-peso'
-          ? Number(entry.value) === 1 ? 'pieza' : 'piezas'
-          : entry.unit || p.unit || 'unidad';
-        portion = `${entry.value} ${unit}`;
-      }
-      const estimate = parseDecimal(entry?.estimated);
-      const pricePart = entry?.mode === 'monto'
-        ? ''
-        : estimate > 0 ? ` · aprox. $${formatMoney(estimate)}` : ' · precio por confirmar';
-      lines.push(`• ${p.name}${portion ? ` — ${portion}` : ''}${pricePart}`);
-    });
+    if (chosen.length) {
+      if (packages.length) lines.push('');
+      lines.push(packages.length ? '*Productos sueltos*' : '*Productos*');
+
+      chosen.forEach((p) => {
+        const entry = selected.get(p.id);
+        let portion = '';
+        if (entry?.mode === 'peso') portion = formatGrams(entry.value);
+        else if (entry?.mode === 'monto') portion = `por $${formatMoney(entry.value)}`;
+        else if (entry?.mode === 'pieza') portion = `${entry.value} ${Number(entry.value) === 1 ? 'pieza' : 'piezas'}`;
+        else if (entry) {
+          const unit = p.saleType === 'pieza-peso'
+            ? Number(entry.value) === 1 ? 'pieza' : 'piezas'
+            : entry.unit || p.unit || 'unidad';
+          portion = `${entry.value} ${unit}`;
+        }
+        const estimate = parseDecimal(entry?.estimated);
+        const pricePart = entry?.mode === 'monto'
+          ? ''
+          : estimate > 0 ? ` · aprox. $${formatMoney(estimate)}` : ' · precio por confirmar';
+        lines.push(`• ${p.name}${portion ? ` — ${portion}` : ''}${pricePart}`);
+      });
+    }
 
     if (estimatedTotal > 0) {
       lines.push('');
-      lines.push(`*Total estimado${itemsWithPrice < chosen.length ? ' parcial' : ''}:* $${formatMoney(estimatedTotal)}`);
+      lines.push(`*Total estimado${hasUnpriced ? ' parcial' : ''}:* $${formatMoney(estimatedTotal)}`);
+    } else {
+      lines.push('');
+      lines.push('*Total estimado:* Por confirmar');
     }
 
     lines.push('');
@@ -1607,7 +1737,7 @@
   }
 
   function openOrderCustomerForm() {
-    if (!currentOrderMessage || selected.size === 0) return;
+    if (!currentOrderMessage || (selected.size === 0 && selectedPackages.size === 0)) return;
     orderReferenceValue.textContent = createOrderReference();
     orderCustomerName.value = '';
     syncOrderFormChoices();
@@ -1640,7 +1770,7 @@
   document.querySelector('#order-customer-cancel').addEventListener('click', closeOrderCustomerForm);
   orderCustomerForm.addEventListener('submit', (event) => {
     event.preventDefault();
-    if (!currentOrderMessage || selected.size === 0) {
+    if (!currentOrderMessage || (selected.size === 0 && selectedPackages.size === 0)) {
       closeOrderCustomerForm();
       return;
     }
@@ -1669,8 +1799,8 @@
     else window.location.assign(waUrl(message));
   });
 
-  function openDrawer() {
-    lastFocus = document.activeElement;
+  function openDrawer(returnFocusTarget = document.activeElement) {
+    lastFocus = returnFocusTarget;
     backdrop.hidden = false;
     drawer.setAttribute('aria-hidden', 'false');
     requestAnimationFrame(() => drawer.classList.add('is-open'));
@@ -1828,7 +1958,7 @@
     if (!heroSearchForm.contains(event.target) && !catalogSearch.contains(event.target)) hideSearchSuggestions();
   });
   showMoreButton.addEventListener('click', () => { visibleCount += pageSize; renderProducts(); });
-  listOpenButton.addEventListener('click', openDrawer);
+  listOpenButton.addEventListener('click', () => openDrawer());
   document.querySelector('#drawer-close').addEventListener('click', closeDrawer);
   backdrop.addEventListener('click', closeDrawer);
 
