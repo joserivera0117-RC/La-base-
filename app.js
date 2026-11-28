@@ -144,6 +144,8 @@
   const showMoreButton = document.querySelector('#show-more');
   const catalogCount = document.querySelector('#catalog-count');
   const listOpenButton = document.querySelector('#list-open');
+  const listFeedback = document.querySelector('#list-feedback');
+  const listFeedbackMessage = document.querySelector('#list-feedback-message');
   const drawer = document.querySelector('#list-drawer');
   const backdrop = document.querySelector('#drawer-backdrop');
   const drawerBody = document.querySelector('.drawer-body');
@@ -152,6 +154,26 @@
   const sendList = document.querySelector('#send-list');
   const drawerTotalAmount = document.querySelector('#drawer-total-amount');
   const drawerSummary = document.querySelector('#drawer-summary');
+  let listFeedbackTimeout = null;
+  let listFeedbackPulseTimeout = null;
+
+  function showListFeedback(message) {
+    if (!listFeedback || !listFeedbackMessage) return;
+    listFeedbackMessage.textContent = message;
+    listFeedback.hidden = false;
+    listOpenButton.classList.remove('is-pulsing');
+    void listOpenButton.offsetWidth;
+    listOpenButton.classList.add('is-pulsing');
+    window.clearTimeout(listFeedbackTimeout);
+    window.clearTimeout(listFeedbackPulseTimeout);
+    listFeedbackTimeout = window.setTimeout(() => {
+      listFeedback.hidden = true;
+    }, 2400);
+    listFeedbackPulseTimeout = window.setTimeout(() => {
+      listOpenButton.classList.remove('is-pulsing');
+    }, 700);
+  }
+
   const orderDeliveryMode = document.querySelector('#order-delivery-mode');
   const orderPaymentMethod = document.querySelector('#order-payment-method');
   const deliveryHintText = document.querySelector('#delivery-hint-text');
@@ -476,17 +498,26 @@
 
   function renderPackageIngredients() {
     if (!packageIngredients) return;
-    packageIngredients.innerHTML = activePackageIngredients.map((ingredient, index) => `
-      <div class="package-ingredient">
-        <div class="package-ingredient-name">
-          <strong>${escapeHtml(ingredient.name)}</strong>
-          ${ingredient.priceNote ? `<small>${escapeHtml(ingredient.priceNote)}</small>` : ''}
-        </div>
-        <button type="button" data-package-minus="${index}" aria-label="Disminuir ${escapeHtml(ingredient.name)}">−</button>
-        <span class="package-ingredient-value">${formatPackageQuantity(ingredient)}</span>
-        <button type="button" data-package-plus="${index}" aria-label="Aumentar ${escapeHtml(ingredient.name)}">+</button>
-        <button type="button" class="package-ingredient-remove" data-package-remove="${index}" aria-label="Quitar ${escapeHtml(ingredient.name)} del paquete"${activePackageIngredients.length === 1 ? ' disabled' : ''}>×</button>
-      </div>`).join('');
+    packageIngredients.innerHTML = activePackageIngredients.map((ingredient, index) => {
+      const amount = estimatePackageIngredient(ingredient);
+      const costText = amount > 0
+        ? `Aprox. $${formatMoney(Math.round(amount))}`
+        : 'Precio por confirmar';
+      return `
+        <div class="package-ingredient">
+          <div class="package-ingredient-name">
+            <strong>${escapeHtml(ingredient.name)}</strong>
+            ${ingredient.priceNote ? `<small>${escapeHtml(ingredient.priceNote)}</small>` : ''}
+          </div>
+          <button type="button" data-package-minus="${index}" aria-label="Disminuir ${escapeHtml(ingredient.name)}">−</button>
+          <div class="package-ingredient-amount" title="Costo estimado: ${escapeHtml(costText)}">
+            <span class="package-ingredient-value">${formatPackageQuantity(ingredient)}</span>
+            <small class="package-ingredient-cost">${costText}</small>
+          </div>
+          <button type="button" data-package-plus="${index}" aria-label="Aumentar ${escapeHtml(ingredient.name)}">+</button>
+          <button type="button" class="package-ingredient-remove" data-package-remove="${index}" aria-label="Quitar ${escapeHtml(ingredient.name)} del paquete"${activePackageIngredients.length === 1 ? ' disabled' : ''}>×</button>
+        </div>`;
+    }).join('');
 
     packageIngredients.querySelectorAll('[data-package-minus]').forEach((button) => {
       button.addEventListener('click', () => {
@@ -554,6 +585,17 @@
     document.querySelector('#package-modal-close').focus();
   }
 
+  function openOrEditPackage(key, trigger) {
+    const savedPackages = [...selectedPackages.values()].filter((packageEntry) => packageEntry.key === key);
+    const existingPackage = savedPackages[savedPackages.length - 1];
+    packageTrigger = trigger;
+    if (existingPackage) {
+      openSavedPackage(existingPackage.id, trigger);
+      return;
+    }
+    openPackageModal(key);
+  }
+
   function closePackageModal() {
     packageModalBackdrop.hidden = true;
     packageModalWrapper.hidden = true;
@@ -564,8 +606,7 @@
 
   document.querySelectorAll('[data-package]').forEach((button) => {
     button.addEventListener('click', () => {
-      packageTrigger = button;
-      openPackageModal(button.dataset.package);
+      openOrEditPackage(button.dataset.package, button);
     });
   });
   document.querySelector('#package-modal-close')?.addEventListener('click', closePackageModal);
@@ -1472,6 +1513,8 @@
   portionBackdrop.addEventListener('click', closePortionModal);
   portionConfirm.addEventListener('click', () => {
     if (!activePortionProduct) return;
+    const productName = activePortionProduct.name;
+    const wasSelected = selected.has(activePortionProduct.id);
     let valid = true;
     if (portionMode === 'peso') valid = portionValue >= (activePortionProduct.minimum || 50);
     if (portionMode === 'monto') valid = portionValue >= getMinimumAmount(activePortionProduct);
@@ -1515,6 +1558,9 @@
     renderSpecialsShowcase();
     renderOffersShowcase();
     renderDrawerItems();
+    showListFeedback(wasSelected
+      ? `${productName} se actualizó en Mi lista.`
+      : `${productName} se agregó a Mi lista.`);
   });
 
   function editSelectedProduct(id) {
@@ -1740,6 +1786,7 @@
     }
 
     lines.push('');
+    lines.push('Los costos por producto y el total son estimados; los productos por peso pueden variar al pesarse.');
     lines.push('¿Me confirman disponibilidad y total final? Gracias.');
 
     currentOrderMessage = totalCount > 0 ? lines.join('\n') : '';

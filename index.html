@@ -114,7 +114,7 @@
       <div class="wrap">
         <div class="section-heading reveal">
           <div><p class="eyebrow"><span class="eyebrow-line"></span> Temporada en La Base</p><h2>Paquetes para compartir<br><em>y celebrar.</em></h2></div>
-          <p class="section-intro">Personaliza los ingredientes, agrega el paquete a tu lista y revisa el pedido antes de enviarlo por WhatsApp.</p>
+          <p class="section-intro">Personaliza los ingredientes; si el paquete ya está en tu lista, podrás editarlo sin duplicarlo.</p>
         </div>
         <div class="package-grid">
           <article class="package-card reveal">
@@ -191,6 +191,10 @@
   <footer class="site-footer"><div class="wrap footer-main"><a class="brand brand-footer" href="#inicio"><span class="brand-mark"><img src="assets/images/logo-mascota.jpeg" alt="Logo de Recaudería La Base"></span><span class="brand-copy"><strong>Recaudería <em>La Base</em></strong><small>Broncas y compañía</small></span></a><p>Fruta, verdura y todo lo rico<br>para tu cocina.</p><nav aria-label="Enlaces de pie de página"><a href="#productos">Productos</a><a href="#nosotros">Nosotros</a><a href="#contacto">Contacto</a><a data-wa href="#pedidos">WhatsApp ↗</a></nav></div><div class="wrap footer-bottom"><span>© <span id="current-year"></span> Recaudería La Base</span><span>Hecho con cariño y sazón <b>✳</b></span></div></footer>
 
   <button class="list-fab" id="list-open" type="button" hidden aria-haspopup="dialog"><span class="basket-icon">＋</span><span>Mi lista</span><b id="list-count">0</b></button>
+  <div class="list-feedback-toast" id="list-feedback" role="status" aria-live="polite" hidden>
+    <span class="list-feedback-icon" aria-hidden="true">✓</span>
+    <span id="list-feedback-message"></span>
+  </div>
   <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
   <aside class="list-drawer" id="list-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" aria-hidden="true">
     <div class="drawer-head">
@@ -271,7 +275,7 @@
           <button type="button" id="package-plus" aria-label="Aumentar personas">+</button>
         </div>
         <div class="package-ingredients" id="package-ingredients"></div>
-        <p class="package-confirmation-note" id="package-confirmation-note">El piloncillo se vende por pieza y se cobra según su peso; su importe final se confirma al pesarlo. Los demás precios también son estimados.</p>
+        <p class="package-confirmation-note" id="package-confirmation-note">Los costos se estiman con los precios vigentes del catálogo. Los productos por peso, incluido el piloncillo, pueden variar y se confirman al pesarlos.</p>
       </div>
       <div class="package-modal-footer">
         <div class="package-total-row"><span>Total estimado disponible</span><strong id="package-total">$0 MXN</strong></div>
