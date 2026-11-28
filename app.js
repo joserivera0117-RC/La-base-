@@ -25,7 +25,7 @@
       ingredients: [
         { id: 'PROD-002', name: 'Guayaba', quantity: 500, unit: 'g', step: 50 },
         { id: 'PROD-092', name: 'Manzana Amarilla Chica', quantity: 1000, unit: 'g', step: 50 },
-        { id: 'PROD-069', name: 'Piloncillo Moreno', quantity: 300, unit: 'g', step: 50 },
+        { id: 'PROD-069', name: 'Piloncillo Moreno', quantity: 2, unit: 'pieza', step: 1, priceNote: 'El importe final depende del peso de cada pieza.' },
         { id: 'PROD-082', name: 'Canela', quantity: 4, unit: 'pieza', step: 1 },
         { id: 'PROD-083', name: 'Jamaica', quantity: 100, unit: 'g', step: 50 },
         { id: 'PROD-081', name: 'Tamarindo', quantity: 200, unit: 'g', step: 50 },
@@ -146,6 +146,7 @@
   const listOpenButton = document.querySelector('#list-open');
   const drawer = document.querySelector('#list-drawer');
   const backdrop = document.querySelector('#drawer-backdrop');
+  const drawerBody = document.querySelector('.drawer-body');
   const drawerItems = document.querySelector('#drawer-items');
   const drawerEmpty = document.querySelector('#drawer-empty');
   const sendList = document.querySelector('#send-list');
@@ -176,21 +177,34 @@
     if (!Array.isArray(savedPackages)) throw new TypeError('El formato guardado debe ser una lista.');
     savedPackages.forEach((savedPackage) => {
       if (!savedPackage || typeof savedPackage.id !== 'string' || !PACKAGE_RECIPES[savedPackage.key] || !Array.isArray(savedPackage.ingredients)) return;
+      const recipe = PACKAGE_RECIPES[savedPackage.key];
+      const servings = Math.min(30, Math.max(2, parseDecimal(savedPackage.servings) || 10));
       const ingredients = savedPackage.ingredients
         .filter((ingredient) => ingredient && typeof ingredient.id === 'string' && typeof ingredient.name === 'string')
-        .map((ingredient) => ({
-          ...ingredient,
-          quantity: parseDecimal(ingredient.quantity),
-          step: parseDecimal(ingredient.step) || 1
-        }))
+        .map((ingredient) => {
+          const quantity = parseDecimal(ingredient.quantity);
+          if (savedPackage.key === 'ponche' && ingredient.id === 'PROD-069' && ingredient.unit === 'g') {
+            return {
+              ...ingredient,
+              quantity: Math.max(1, Math.round((quantity / 300) * 2 * (servings / 10))),
+              unit: 'pieza',
+              step: 1,
+              priceNote: 'El importe final depende del peso de cada pieza.'
+            };
+          }
+          return {
+            ...ingredient,
+            quantity,
+            step: parseDecimal(ingredient.step) || 1
+          };
+        })
         .filter((ingredient) => ingredient.quantity > 0);
       if (!ingredients.length) return;
-      const recipe = PACKAGE_RECIPES[savedPackage.key];
       selectedPackages.set(savedPackage.id, {
         id: savedPackage.id,
         key: savedPackage.key,
         title: recipe.title,
-        servings: Math.min(30, Math.max(2, parseDecimal(savedPackage.servings) || 10)),
+        servings,
         ingredients
       });
     });
@@ -228,6 +242,7 @@
   let lastFocus = null;
   let currentOrderMessage = '';
   let activePackageKey = null;
+  let activePackageListId = null;
   let packageServings = 10;
   let packageTrigger = null;
 
@@ -415,9 +430,11 @@
   const packageModalBackdrop = document.querySelector('#package-modal-backdrop');
   const packageModalWrapper = document.querySelector('#package-modal-wrapper');
   const packageModalTitle = document.querySelector('#package-modal-title');
+  const packageModalContent = document.querySelector('.package-modal-content');
   const packageIngredients = document.querySelector('#package-ingredients');
   const packageServingsValue = document.querySelector('#package-servings-value');
   const packageTotal = document.querySelector('#package-total');
+  const packageSendLabel = document.querySelector('#package-send-label');
   let activePackageIngredients = [];
 
   function estimatePackageIngredient(ingredient) {
@@ -463,6 +480,7 @@
       <div class="package-ingredient">
         <div class="package-ingredient-name">
           <strong>${escapeHtml(ingredient.name)}</strong>
+          ${ingredient.priceNote ? `<small>${escapeHtml(ingredient.priceNote)}</small>` : ''}
         </div>
         <button type="button" data-package-minus="${index}" aria-label="Disminuir ${escapeHtml(ingredient.name)}">−</button>
         <span class="package-ingredient-value">${formatPackageQuantity(ingredient)}</span>
@@ -501,21 +519,47 @@
     const recipe = PACKAGE_RECIPES[key];
     if (!recipe || !packageModalWrapper) return;
     activePackageKey = key;
+    activePackageListId = null;
     packageServings = 10;
     activePackageIngredients = recipe.ingredients.map((ingredient) => ({ ...ingredient }));
     packageModalTitle.textContent = recipe.title;
     packageServingsValue.textContent = '10';
+    packageSendLabel.textContent = 'Agregar paquete a mi lista';
     renderPackageIngredients();
     updatePackageEstimate();
+    packageModalContent.scrollTop = 0;
     packageModalBackdrop.hidden = false;
     packageModalWrapper.hidden = false;
     document.body.classList.add('no-scroll');
+    document.querySelector('#package-modal-close').focus();
+  }
+
+  function openSavedPackage(packageId, trigger) {
+    const savedPackage = selectedPackages.get(packageId);
+    if (!savedPackage || !packageModalWrapper) return;
+    activePackageListId = packageId;
+    activePackageKey = savedPackage.key;
+    packageTrigger = trigger;
+    packageServings = savedPackage.servings;
+    activePackageIngredients = savedPackage.ingredients.map((ingredient) => ({ ...ingredient }));
+    packageModalTitle.textContent = savedPackage.title;
+    packageServingsValue.textContent = String(packageServings);
+    packageSendLabel.textContent = 'Guardar cambios en mi lista';
+    renderPackageIngredients();
+    updatePackageEstimate();
+    packageModalContent.scrollTop = 0;
+    packageModalBackdrop.hidden = false;
+    packageModalWrapper.hidden = false;
+    document.body.classList.add('no-scroll');
+    document.querySelector('#package-modal-close').focus();
   }
 
   function closePackageModal() {
     packageModalBackdrop.hidden = true;
     packageModalWrapper.hidden = true;
-    document.body.classList.remove('no-scroll');
+    activePackageListId = null;
+    if (!drawer.classList.contains('is-open')) document.body.classList.remove('no-scroll');
+    if (packageTrigger?.isConnected) packageTrigger.focus();
   }
 
   document.querySelectorAll('[data-package]').forEach((button) => {
@@ -551,6 +595,23 @@
   document.querySelector('#package-send')?.addEventListener('click', () => {
     const recipe = PACKAGE_RECIPES[activePackageKey];
     if (!recipe) return;
+    if (activePackageListId) {
+      const packageId = activePackageListId;
+      selectedPackages.set(packageId, {
+        id: packageId,
+        key: activePackageKey,
+        title: recipe.title,
+        servings: packageServings,
+        ingredients: activePackageIngredients.map((ingredient) => ({ ...ingredient }))
+      });
+      saveSelectedPackages();
+      closePackageModal();
+      renderDrawerItems();
+      drawerItems.querySelector(`[data-edit-package="${packageId}"]`)?.focus();
+      activePackageListId = null;
+      return;
+    }
+
     const id = `paquete-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     selectedPackages.set(id, {
       id,
@@ -562,6 +623,7 @@
     saveSelectedPackages();
     closePackageModal();
     renderDrawerItems();
+    drawerBody.scrollTop = drawerBody.scrollHeight;
     openDrawer(packageTrigger);
   });
 
@@ -1463,43 +1525,24 @@
 
   function renderPackageDrawerItem(packageEntry) {
     const estimate = getPackageEstimate(packageEntry.ingredients);
-    const ingredientItems = packageEntry.ingredients.map((ingredient, index) => {
-      const amount = estimatePackageIngredient(ingredient);
-      const minimum = ingredient.unit === 'pieza' || ingredient.unit === 'lata' ? 1 : ingredient.step;
-      return `<li class="drawer-package-ingredient">
-        <div class="drawer-package-ingredient-copy">
-          <strong>${escapeHtml(ingredient.name)}</strong>
-          <span>${formatPackageQuantity(ingredient)} · ${amount > 0 ? `aprox. $${formatMoney(Math.round(amount))}` : 'precio por confirmar'}</span>
-        </div>
-        <div class="drawer-package-ingredient-actions">
-          <button type="button" data-package-cart-minus="${escapeHtml(packageEntry.id)}" data-ingredient-index="${index}" aria-label="Disminuir ${escapeHtml(ingredient.name)}"${ingredient.quantity <= minimum ? ' disabled' : ''}>−</button>
-          <button type="button" data-package-cart-remove="${escapeHtml(packageEntry.id)}" data-ingredient-index="${index}" aria-label="Quitar ${escapeHtml(ingredient.name)} del paquete"${packageEntry.ingredients.length === 1 ? ' disabled' : ''}>×</button>
-          <button type="button" data-package-cart-plus="${escapeHtml(packageEntry.id)}" data-ingredient-index="${index}" aria-label="Aumentar ${escapeHtml(ingredient.name)}">+</button>
-        </div>
-      </li>`;
-    }).join('');
     const totalText = estimate.total > 0
       ? `~$${formatMoney(estimate.total)}${estimate.hasUnpriced ? '*' : ''}`
       : 'Por confirmar';
 
     return `<li class="drawer-package-card" data-package-id="${escapeHtml(packageEntry.id)}">
-      <details class="drawer-package-details">
-        <summary>
-          <span class="drawer-package-title"><strong>${escapeHtml(packageEntry.title)}</strong><small>Paquete · ${packageEntry.servings} personas · ${packageEntry.ingredients.length} productos</small></span>
-          <span class="drawer-package-total">${totalText}</span>
-        </summary>
-        <ul class="drawer-package-ingredients">${ingredientItems}</ul>
-        <button type="button" class="drawer-package-remove" data-remove-package="${escapeHtml(packageEntry.id)}">Quitar paquete</button>
-      </details>
+      <button type="button" class="drawer-package-open" data-edit-package="${escapeHtml(packageEntry.id)}" aria-label="Ver y editar ${escapeHtml(packageEntry.title)}">
+        <span class="drawer-package-title"><strong>${escapeHtml(packageEntry.title)}</strong><small>Paquete · ${packageEntry.servings} personas · ${packageEntry.ingredients.length} productos</small><small class="drawer-package-edit-hint">Ver productos y editar</small></span>
+        <span class="drawer-package-total">${totalText}</span>
+        <span class="drawer-package-arrow" aria-hidden="true">↗</span>
+      </button>
+      <button type="button" class="drawer-package-remove" data-remove-package="${escapeHtml(packageEntry.id)}" aria-label="Quitar ${escapeHtml(packageEntry.title)} de mi lista">Quitar paquete</button>
     </li>`;
   }
 
   function renderDrawerItems() {
     const chosen = products.filter((product) => selected.has(product.id));
     const packages = [...selectedPackages.values()];
-    const expandedPackageIds = new Set([...drawerItems.querySelectorAll('.drawer-package-details[open]')]
-      .map((details) => details.closest('.drawer-package-card')?.dataset.packageId)
-      .filter(Boolean));
+    const drawerScrollTop = drawerBody.scrollTop;
     const totalCount = chosen.length + packages.length;
     let migratedSelection = false;
 
@@ -1596,11 +1639,7 @@
       </li>`;
     }).join('');
     drawerItems.innerHTML = `${productItems}${packages.map(renderPackageDrawerItem).join('')}`;
-    drawerItems.querySelectorAll('.drawer-package-card').forEach((card) => {
-      if (expandedPackageIds.has(card.dataset.packageId)) {
-        card.querySelector('.drawer-package-details').open = true;
-      }
-    });
+    drawerBody.scrollTop = drawerScrollTop;
     if (migratedSelection) saveSelected();
 
     drawerItems.querySelectorAll('[data-remove]').forEach((button) => {
@@ -1616,28 +1655,8 @@
         renderDrawerItems();
       });
     });
-    drawerItems.querySelectorAll('[data-package-cart-minus], [data-package-cart-plus], [data-package-cart-remove]').forEach((button) => {
-      button.addEventListener('click', () => {
-        const packageEntry = selectedPackages.get(button.dataset.packageCartMinus
-          || button.dataset.packageCartPlus
-          || button.dataset.packageCartRemove);
-        const ingredientIndex = Number(button.dataset.ingredientIndex);
-        const ingredient = packageEntry?.ingredients[ingredientIndex];
-        if (!packageEntry || !ingredient) return;
-
-        if (button.hasAttribute('data-package-cart-minus')) {
-          const minimum = ingredient.unit === 'pieza' || ingredient.unit === 'lata' ? 1 : ingredient.step;
-          ingredient.quantity = Math.max(minimum, ingredient.quantity - ingredient.step);
-        } else if (button.hasAttribute('data-package-cart-plus')) {
-          ingredient.quantity += ingredient.step;
-        } else {
-          if (packageEntry.ingredients.length <= 1) return;
-          packageEntry.ingredients.splice(ingredientIndex, 1);
-        }
-
-        saveSelectedPackages();
-        renderDrawerItems();
-      });
+    drawerItems.querySelectorAll('[data-edit-package]').forEach((button) => {
+      button.addEventListener('click', () => openSavedPackage(button.dataset.editPackage, button));
     });
 
     drawerEmpty.hidden = totalCount > 0;
@@ -1682,7 +1701,8 @@
         packageEntry.ingredients.forEach((ingredient) => {
           const amount = estimatePackageIngredient(ingredient);
           const pricePart = amount > 0 ? ` · aprox. $${formatMoney(Math.round(amount))}` : ' · precio por confirmar';
-          lines.push(`• ${ingredient.name} — ${formatPackageQuantity(ingredient)}${pricePart}`);
+          const notePart = ingredient.priceNote ? ` · ${ingredient.priceNote}` : '';
+          lines.push(`• ${ingredient.name} — ${formatPackageQuantity(ingredient)}${pricePart}${notePart}`);
         });
       });
     }

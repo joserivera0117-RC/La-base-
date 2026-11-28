@@ -263,16 +263,20 @@
         <div><p class="eyebrow"><span class="eyebrow-line"></span> Personaliza tu paquete</p><h2 id="package-modal-title">Paquete</h2></div>
         <button class="drawer-close" id="package-modal-close" type="button" aria-label="Cerrar paquete">×</button>
       </div>
-      <div class="package-servings">
-        <span>Personas</span>
-        <button type="button" id="package-minus" aria-label="Disminuir personas">−</button>
-        <strong id="package-servings-value">10</strong>
-        <button type="button" id="package-plus" aria-label="Aumentar personas">+</button>
+      <div class="package-modal-content">
+        <div class="package-servings">
+          <span>Personas</span>
+          <button type="button" id="package-minus" aria-label="Disminuir personas">−</button>
+          <strong id="package-servings-value">10</strong>
+          <button type="button" id="package-plus" aria-label="Aumentar personas">+</button>
+        </div>
+        <div class="package-ingredients" id="package-ingredients"></div>
+        <p class="package-confirmation-note" id="package-confirmation-note">El piloncillo se vende por pieza y se cobra según su peso; su importe final se confirma al pesarlo. Los demás precios también son estimados.</p>
       </div>
-      <div class="package-ingredients" id="package-ingredients"></div>
-      <p class="package-confirmation-note" id="package-confirmation-note">El total es orientativo: los productos vendidos por peso pueden variar al pesarlos y la existencia se confirma al preparar tu pedido.</p>
-      <div class="package-total-row"><span>Total estimado disponible</span><strong id="package-total">$0 MXN</strong></div>
-      <button class="button button-dark package-send" id="package-send" type="button">Agregar paquete a mi lista <span aria-hidden="true">↗</span></button>
+      <div class="package-modal-footer">
+        <div class="package-total-row"><span>Total estimado disponible</span><strong id="package-total">$0 MXN</strong></div>
+        <button class="button button-dark package-send" id="package-send" type="button"><span id="package-send-label">Agregar paquete a mi lista</span><span aria-hidden="true">↗</span></button>
+      </div>
     </section>
   </div>
 
